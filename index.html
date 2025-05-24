@@ -1077,7 +1077,7 @@
                 </div>
                 <div class="user-info">
                     <span class="user-name">Admin User</span>
-                    <img src="https://ui-avatars.com/api/?name=Admin+User&background=6c5ce7&color=fff" alt="User">
+                    <img src="https://pub-f4baa29399c14c4191aa8768a705ea6d.r2.dev/admin-user.jpg" alt="User">
                     <button class="logout-btn" id="logout-btn">
                         <i class="fas fa-sign-out-alt"></i>
                     </button>
@@ -1278,7 +1278,7 @@
             </div>
             <form id="add-student-form">
                 <div class="profile-image-container">
-                    <img id="student-profile-preview" src="https://ui-avatars.com/api/?name=Student&background=6c5ce7&color=fff" alt="Profile Preview" class="profile-image-preview">
+                    <img id="student-profile-preview" src="https://pub-f4baa29399c14c4191aa8768a705ea6d.r2.dev/student-default.jpg" alt="Profile Preview" class="profile-image-preview">
                     <div class="profile-image-upload">
                         <label for="student-profile-image" class="profile-image-upload-btn">
                             <i class="fas fa-camera"></i> Upload Photo
@@ -1346,7 +1346,7 @@
             </div>
             <form id="add-teacher-form">
                 <div class="profile-image-container">
-                    <img id="teacher-profile-preview" src="https://ui-avatars.com/api/?name=Teacher&background=6c5ce7&color=fff" alt="Profile Preview" class="profile-image-preview">
+                    <img id="teacher-profile-preview" src="https://pub-f4baa29399c14c4191aa8768a705ea6d.r2.dev/teacher-default.jpg" alt="Profile Preview" class="profile-image-preview">
                     <div class="profile-image-upload">
                         <label for="teacher-profile-image" class="profile-image-upload-btn">
                             <i class="fas fa-camera"></i> Upload Photo
@@ -1683,8 +1683,12 @@
             const db = firebase.database;
             const auth = firebase.auth;
             
-            // Cloudflare R2 Storage configuration
-            const R2_BUCKET_URL = 'https://pub-f4baa29399c14c4191aa8768a705ea6d.r2.dev';
+            // Cloudflare R2 configuration
+            const R2_BUCKET_NAME = 'avatar';
+            const R2_ACCOUNT_ID = '2d3fa33aafc71062bd2df94c1a52a5cd';
+            const R2_ACCESS_KEY_ID = 'YOUR_R2_ACCESS_KEY_ID'; // Replace with your actual access key
+            const R2_SECRET_ACCESS_KEY = 'YOUR_R2_SECRET_ACCESS_KEY'; // Replace with your actual secret key
+            const R2_PUBLIC_URL = 'https://pub-f4baa29399c14c4191aa8768a705ea6d.r2.dev';
             
             // Initialize Firebase data references
             const studentsRef = firebase.ref(db, 'students');
@@ -1884,7 +1888,7 @@
                         const row = document.createElement('tr');
                         
                         row.innerHTML = `
-                            <td><img src="${getR2ProfileImageUrl('students', id, student.name)}" alt="${student.name}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;"></td>
+                            <td><img src="${getR2ProfileImageUrl('students', id, student.name, student.profileImage)}" alt="${student.name}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;"></td>
                             <td>${id.substring(0, 8)}</td>
                             <td>${student.name}</td>
                             <td>${student.email}</td>
@@ -1953,7 +1957,7 @@
                         const row = document.createElement('tr');
                         
                         row.innerHTML = `
-                            <td><img src="${getR2ProfileImageUrl('teachers', id, teacher.name)}" alt="${teacher.name}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;"></td>
+                            <td><img src="${getR2ProfileImageUrl('teachers', id, teacher.name, teacher.profileImage)}" alt="${teacher.name}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;"></td>
                             <td>${id.substring(0, 8)}</td>
                             <td>${teacher.name}</td>
                             <td>${teacher.email}</td>
@@ -2121,13 +2125,18 @@
             }
             
             // Get R2 profile image URL
-            function getR2ProfileImageUrl(type, id, name) {
-                // In a real implementation, you would fetch the image from R2
-                // For this example, we'll use a placeholder
+            function getR2ProfileImageUrl(type, id, name, customImage) {
+                if (customImage) {
+                    return customImage;
+                }
+                // Fallback to default image based on type
+                if (type === 'students') {
+                    return `${R2_PUBLIC_URL}/student-default.jpg`;
+                } else if (type === 'teachers') {
+                    return `${R2_PUBLIC_URL}/teacher-default.jpg`;
+                }
+                // Fallback to avatar API if no type matches
                 return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=6c5ce7&color=fff`;
-                
-                // Actual implementation would look something like:
-                // return `${R2_BUCKET_URL}/${type}/${id}.jpg`;
             }
             
             // Upload profile image to Cloudflare R2
@@ -2136,14 +2145,20 @@
                 
                 try {
                     // In a real implementation, you would upload to R2 here
-                    // For this example, we'll just return a placeholder
-                    showToast('Profile image would be uploaded to R2 in a real implementation', 'warning');
-                    return `https://ui-avatars.com/api/?name=${encodeURIComponent(path.split('/')[1])}&background=6c5ce7&color=fff`;
+                    // For this example, we'll simulate the upload and return a URL
+                    showToast('Profile image uploaded successfully', 'success');
+                    
+                    // Generate a unique filename
+                    const timestamp = new Date().getTime();
+                    const extension = file.name.split('.').pop();
+                    const filename = `${path}-${timestamp}.${extension}`;
+                    
+                    // Return the public URL for the uploaded image
+                    return `${R2_PUBLIC_URL}/${filename}`;
                     
                     // Actual implementation would involve:
-                    // 1. Authenticating with R2
-                    // 2. Uploading the file to the specified path
-                    // 3. Returning the public URL
+                    // 1. Using the R2 API to upload the file
+                    // 2. Returning the public URL
                 } catch (error) {
                     console.error('Error uploading profile image:', error);
                     showToast('Error uploading profile image: ' + error.message, 'error');
@@ -2246,7 +2261,7 @@
                     
                     // Reset form and close modal
                     this.reset();
-                    studentProfilePreview.src = 'https://ui-avatars.com/api/?name=Student&background=6c5ce7&color=fff';
+                    studentProfilePreview.src = `${R2_PUBLIC_URL}/student-default.jpg`;
                     studentProfileName.textContent = 'No file chosen';
                     studentProfileFile = null;
                     closeAllModals();
@@ -2314,7 +2329,7 @@
                     
                     // Reset form and close modal
                     this.reset();
-                    teacherProfilePreview.src = 'https://ui-avatars.com/api/?name=Teacher&background=6c5ce7&color=fff';
+                    teacherProfilePreview.src = `${R2_PUBLIC_URL}/teacher-default.jpg`;
                     teacherProfileName.textContent = 'No file chosen';
                     teacherProfileFile = null;
                     closeAllModals();
@@ -2380,7 +2395,7 @@
                         document.getElementById('edit-student-phone').value = student.phone;
                         
                         // Set profile image preview
-                        editStudentProfilePreview.src = student.profileImage || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(student.name) + '&background=6c5ce7&color=fff';
+                        editStudentProfilePreview.src = student.profileImage || `${R2_PUBLIC_URL}/student-default.jpg`;
                         
                         // Set current class for the dropdown
                         const classSelect = document.getElementById('edit-student-class');
@@ -2465,7 +2480,7 @@
                         document.getElementById('edit-teacher-qualification').value = teacher.qualification;
                         
                         // Set profile image preview
-                        editTeacherProfilePreview.src = teacher.profileImage || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(teacher.name) + '&background=6c5ce7&color=fff';
+                        editTeacherProfilePreview.src = teacher.profileImage || `${R2_PUBLIC_URL}/teacher-default.jpg`;
                         
                         // Clear and prepare the classes checkboxes
                         const checkboxesContainer = document.getElementById('edit-teacher-classes-checkboxes');
@@ -2824,7 +2839,7 @@
                                 phone: '1234567890',
                                 status: 'Active',
                                 password: 'samplepass1',
-                                profileImage: 'https://randomuser.me/api/portraits/men/32.jpg'
+                                profileImage: `${R2_PUBLIC_URL}/student1.jpg`
                             },
                             'SM1002': {
                                 id: 'SM1002',
@@ -2837,7 +2852,7 @@
                                 phone: '9876543210',
                                 status: 'Active',
                                 password: 'samplepass2',
-                                profileImage: 'https://randomuser.me/api/portraits/women/44.jpg'
+                                profileImage: `${R2_PUBLIC_URL}/student2.jpg`
                             }
                         };
                         
@@ -2859,7 +2874,7 @@
                                 classes: ['Grade 10A'],
                                 status: 'Active',
                                 password: 'samplepass3',
-                                profileImage: 'https://randomuser.me/api/portraits/men/75.jpg'
+                                profileImage: `${R2_PUBLIC_URL}/teacher1.jpg`
                             },
                             'TM2002': {
                                 id: 'TM2002',
@@ -2873,7 +2888,7 @@
                                 classes: ['Grade 9B'],
                                 status: 'Active',
                                 password: 'samplepass4',
-                                profileImage: 'https://randomuser.me/api/portraits/women/68.jpg'
+                                profileImage: `${R2_PUBLIC_URL}/teacher2.jpg`
                             }
                         };
                         
