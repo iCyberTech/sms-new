@@ -11,7 +11,7 @@
         import { getDatabase, ref, set, get, child, push, update, remove } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-database.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-auth.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-analytics.js";
-        import { getStorage, ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-storage.js";
+        import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-storage.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDywun1wpfxaXbaDoxyZD1SS0tsJ6ZIvX0",
@@ -33,7 +33,11 @@
         // Make Firebase available globally
         window.firebase = {
             database,
+            storage,
             ref,
+            storageRef,
+            uploadBytes,
+            getDownloadURL,
             set,
             get,
             child,
@@ -43,12 +47,7 @@
             auth,
             createUserWithEmailAndPassword,
             signInWithEmailAndPassword,
-            signOut,
-            storage,
-            storageRef,
-            uploadBytes,
-            getDownloadURL,
-            deleteObject
+            signOut
         };
     </script>
     <style>
@@ -384,6 +383,28 @@
             margin-right: 5px;
         }
 
+        /* Search Bar */
+        .search-container {
+            margin-bottom: 20px;
+            display: flex;
+        }
+
+        .search-container input {
+            flex: 1;
+            padding: 10px 15px;
+            border: none;
+            border-radius: var(--border-radius);
+            background: var(--light-color);
+            box-shadow: var(--shadow-inset);
+            font-size: 14px;
+            transition: var(--transition);
+        }
+
+        .search-container input:focus {
+            outline: none;
+            box-shadow: inset 4px 4px 8px #d1d9e6, inset -4px -4px 8px #ffffff, 0 0 0 2px var(--secondary-color);
+        }
+
         /* Table Styles */
         .table-responsive {
             overflow-x: auto;
@@ -579,6 +600,40 @@
             transform: translateY(-2px);
         }
 
+        /* Avatar Upload */
+        .avatar-upload {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .avatar-preview {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 10px;
+            border: 3px solid var(--primary-color);
+            box-shadow: var(--shadow);
+        }
+
+        .avatar-upload-btn {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+
+        .avatar-upload-btn input[type="file"] {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
         /* Modal Styles */
         .modal {
             position: fixed;
@@ -685,7 +740,7 @@
         /* Grid View for Classes */
         .classes-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
             gap: 20px;
         }
 
@@ -695,6 +750,10 @@
             padding: 20px;
             box-shadow: var(--shadow);
             transition: var(--transition);
+            aspect-ratio: 1/1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
 
         .class-card:hover {
@@ -765,6 +824,21 @@
             gap: 10px;
         }
 
+        .class-students-list {
+            max-height: 150px;
+            overflow-y: auto;
+            margin-top: 10px;
+            padding: 5px;
+            background-color: rgba(108, 92, 231, 0.05);
+            border-radius: var(--border-radius);
+        }
+
+        .class-students-list p {
+            margin: 5px 0;
+            padding: 5px;
+            border-bottom: 1px solid #eee;
+        }
+
         /* Checkbox styles */
         .checkbox-group {
             margin-bottom: 15px;
@@ -826,64 +900,6 @@
             transform: rotate(45deg);
         }
 
-        /* Profile Image Upload */
-        .profile-image-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .profile-image-preview {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 3px solid var(--primary-color);
-            margin-bottom: 15px;
-            box-shadow: var(--shadow);
-        }
-
-        .profile-image-upload {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .profile-image-upload-btn {
-            background: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: var(--border-radius);
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            box-shadow: var(--shadow);
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-        }
-
-        .profile-image-upload-btn:hover {
-            background: var(--secondary-color);
-            transform: translateY(-2px);
-        }
-
-        .profile-image-upload-btn i {
-            margin-right: 5px;
-        }
-
-        .profile-image-file {
-            display: none;
-        }
-
-        .profile-image-name {
-            margin-top: 10px;
-            font-size: 12px;
-            color: #7f8c8d;
-        }
-
         /* Responsive Styles */
         @media (max-width: 992px) {
             .main-content.active {
@@ -908,6 +924,10 @@
 
             .classes-grid {
                 grid-template-columns: 1fr;
+            }
+            
+            .class-card {
+                aspect-ratio: auto;
             }
         }
 
@@ -1003,6 +1023,84 @@
             cursor: pointer;
             margin-left: 15px;
             font-size: 18px;
+        }
+
+        /* Student list in class modal */
+        .student-list-container {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 15px;
+            border: 1px solid #eee;
+            border-radius: var(--border-radius);
+            padding: 10px;
+        }
+
+        .student-list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #f5f5f5;
+        }
+
+        .student-list-item:last-child {
+            border-bottom: none;
+        }
+
+        .student-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: 10px;
+        }
+
+        .student-name {
+            flex: 1;
+        }
+
+        .remove-student-btn {
+            background: none;
+            border: none;
+            color: var(--danger-color);
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        /* Add students to class modal */
+        .add-students-container {
+            margin-top: 15px;
+        }
+
+        .available-students-list {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 10px;
+            border: 1px solid #eee;
+            border-radius: var(--border-radius);
+            padding: 10px;
+        }
+
+        .available-student-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #f5f5f5;
+        }
+
+        .available-student-item:last-child {
+            border-bottom: none;
+        }
+
+        .add-student-btn {
+            background: var(--success-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 3px 8px;
+            font-size: 12px;
+            cursor: pointer;
         }
     </style>
 </head>
@@ -1170,11 +1268,14 @@
                         </button>
                     </div>
                 </div>
+                <div class="search-container">
+                    <input type="text" id="student-search" placeholder="Search students by name, email, or class...">
+                </div>
                 <div class="table-responsive">
                     <table>
                         <thead>
                             <tr>
-                                <th>Photo</th>
+                                <th>Avatar</th>
                                 <th>ID</th>
                                 <th>Name</th>
                                 <th>Email</th>
@@ -1204,7 +1305,7 @@
                     <table>
                         <thead>
                             <tr>
-                                <th>Photo</th>
+                                <th>Avatar</th>
                                 <th>ID</th>
                                 <th>Name</th>
                                 <th>Email</th>
@@ -1284,14 +1385,11 @@
                 <button class="close-modal">&times;</button>
             </div>
             <form id="add-student-form">
-                <div class="profile-image-container">
-                    <img id="student-profile-preview" src="https://ui-avatars.com/api/?name=Student&background=6c5ce7&color=fff" alt="Profile Preview" class="profile-image-preview">
-                    <div class="profile-image-upload">
-                        <label for="student-profile-image" class="profile-image-upload-btn">
-                            <i class="fas fa-camera"></i> Upload Photo
-                        </label>
-                        <input type="file" id="student-profile-image" class="profile-image-file" accept="image/*">
-                        <div id="student-profile-name" class="profile-image-name">No file chosen</div>
+                <div class="avatar-upload">
+                    <img id="student-avatar-preview" src="https://ui-avatars.com/api/?name=New+Student&background=6c5ce7&color=fff" class="avatar-preview" alt="Student Avatar">
+                    <div class="avatar-upload-btn btn btn-secondary">
+                        <span><i class="fas fa-upload"></i> Upload Avatar</span>
+                        <input type="file" id="student-avatar" accept="image/*">
                     </div>
                 </div>
                 <div class="form-group">
@@ -1352,14 +1450,11 @@
                 <button class="close-modal">&times;</button>
             </div>
             <form id="add-teacher-form">
-                <div class="profile-image-container">
-                    <img id="teacher-profile-preview" src="https://ui-avatars.com/api/?name=Teacher&background=6c5ce7&color=fff" alt="Profile Preview" class="profile-image-preview">
-                    <div class="profile-image-upload">
-                        <label for="teacher-profile-image" class="profile-image-upload-btn">
-                            <i class="fas fa-camera"></i> Upload Photo
-                        </label>
-                        <input type="file" id="teacher-profile-image" class="profile-image-file" accept="image/*">
-                        <div id="teacher-profile-name" class="profile-image-name">No file chosen</div>
+                <div class="avatar-upload">
+                    <img id="teacher-avatar-preview" src="https://ui-avatars.com/api/?name=New+Teacher&background=6c5ce7&color=fff" class="avatar-preview" alt="Teacher Avatar">
+                    <div class="avatar-upload-btn btn btn-secondary">
+                        <span><i class="fas fa-upload"></i> Upload Avatar</span>
+                        <input type="file" id="teacher-avatar" accept="image/*">
                     </div>
                 </div>
                 <div class="form-group">
@@ -1485,6 +1580,23 @@
                     <label for="edit-class-room">Room Number</label>
                     <input type="text" id="edit-class-room" required>
                 </div>
+                
+                <!-- Students in this class section -->
+                <div class="form-group">
+                    <label>Students in this Class</label>
+                    <div class="student-list-container" id="class-students-list">
+                        <!-- Students will be loaded here -->
+                    </div>
+                </div>
+                
+                <!-- Add students to class section -->
+                <div class="form-group add-students-container">
+                    <label>Add Students to Class</label>
+                    <div class="available-students-list" id="available-students-list">
+                        <!-- Available students will be loaded here -->
+                    </div>
+                </div>
+                
                 <div class="form-actions">
                     <button type="button" class="btn btn-secondary close-modal">Cancel</button>
                     <button type="submit" class="btn btn-primary">Save Changes</button>
@@ -1502,14 +1614,11 @@
             </div>
             <form id="edit-teacher-form">
                 <input type="hidden" id="edit-teacher-id">
-                <div class="profile-image-container">
-                    <img id="edit-teacher-profile-preview" src="" alt="Profile Preview" class="profile-image-preview">
-                    <div class="profile-image-upload">
-                        <label for="edit-teacher-profile-image" class="profile-image-upload-btn">
-                            <i class="fas fa-camera"></i> Change Photo
-                        </label>
-                        <input type="file" id="edit-teacher-profile-image" class="profile-image-file" accept="image/*">
-                        <div id="edit-teacher-profile-name" class="profile-image-name">No file chosen</div>
+                <div class="avatar-upload">
+                    <img id="edit-teacher-avatar-preview" src="" class="avatar-preview" alt="Teacher Avatar">
+                    <div class="avatar-upload-btn btn btn-secondary">
+                        <span><i class="fas fa-upload"></i> Change Avatar</span>
+                        <input type="file" id="edit-teacher-avatar" accept="image/*">
                     </div>
                 </div>
                 <div class="form-group">
@@ -1581,14 +1690,11 @@
             </div>
             <form id="edit-student-form">
                 <input type="hidden" id="edit-student-id">
-                <div class="profile-image-container">
-                    <img id="edit-student-profile-preview" src="" alt="Profile Preview" class="profile-image-preview">
-                    <div class="profile-image-upload">
-                        <label for="edit-student-profile-image" class="profile-image-upload-btn">
-                            <i class="fas fa-camera"></i> Change Photo
-                        </label>
-                        <input type="file" id="edit-student-profile-image" class="profile-image-file" accept="image/*">
-                        <div id="edit-student-profile-name" class="profile-image-name">No file chosen</div>
+                <div class="avatar-upload">
+                    <img id="edit-student-avatar-preview" src="" class="avatar-preview" alt="Student Avatar">
+                    <div class="avatar-upload-btn btn btn-secondary">
+                        <span><i class="fas fa-upload"></i> Change Avatar</span>
+                        <input type="file" id="edit-student-avatar" accept="image/*">
                     </div>
                 </div>
                 <div class="form-group">
@@ -1664,22 +1770,18 @@
             const addTeacherBtn = document.getElementById('add-teacher-btn');
             const addClassBtn = document.getElementById('add-class-btn');
             
-            // Profile image upload elements
-            const studentProfileImage = document.getElementById('student-profile-image');
-            const studentProfilePreview = document.getElementById('student-profile-preview');
-            const studentProfileName = document.getElementById('student-profile-name');
+            // Avatar upload elements
+            const studentAvatarInput = document.getElementById('student-avatar');
+            const studentAvatarPreview = document.getElementById('student-avatar-preview');
+            const teacherAvatarInput = document.getElementById('teacher-avatar');
+            const teacherAvatarPreview = document.getElementById('teacher-avatar-preview');
+            const editStudentAvatarInput = document.getElementById('edit-student-avatar');
+            const editStudentAvatarPreview = document.getElementById('edit-student-avatar-preview');
+            const editTeacherAvatarInput = document.getElementById('edit-teacher-avatar');
+            const editTeacherAvatarPreview = document.getElementById('edit-teacher-avatar-preview');
             
-            const teacherProfileImage = document.getElementById('teacher-profile-image');
-            const teacherProfilePreview = document.getElementById('teacher-profile-preview');
-            const teacherProfileName = document.getElementById('teacher-profile-name');
-            
-            const editStudentProfileImage = document.getElementById('edit-student-profile-image');
-            const editStudentProfilePreview = document.getElementById('edit-student-profile-preview');
-            const editStudentProfileName = document.getElementById('edit-student-profile-name');
-            
-            const editTeacherProfileImage = document.getElementById('edit-teacher-profile-image');
-            const editTeacherProfilePreview = document.getElementById('edit-teacher-profile-preview');
-            const editTeacherProfileName = document.getElementById('edit-teacher-profile-name');
+            // Search elements
+            const studentSearchInput = document.getElementById('student-search');
             
             // Toast elements
             const toast = document.getElementById('toast');
@@ -1688,8 +1790,8 @@
             
             // Firebase references
             const db = firebase.database;
-            const auth = firebase.auth;
             const storage = firebase.storage;
+            const auth = firebase.auth;
             
             // Initialize Firebase data references
             const studentsRef = firebase.ref(db, 'students');
@@ -1701,11 +1803,15 @@
             // Current user
             let currentUser = null;
             
-            // Profile images storage
-            let studentProfileFile = null;
-            let teacherProfileFile = null;
-            let editStudentProfileFile = null;
-            let editTeacherProfileFile = null;
+            // Avatar files
+            let studentAvatarFile = null;
+            let teacherAvatarFile = null;
+            let editStudentAvatarFile = null;
+            let editTeacherAvatarFile = null;
+            
+            // Brevo API configuration
+            const BREVO_API_KEY = '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';
+            const BREVO_API_URL = 'https://api.brevo.com/v3/smtp/email';
             
             // Show toast notification
             function showToast(message, type = 'success', duration = 5000) {
@@ -1784,57 +1890,71 @@
             addTeacherBtn.addEventListener('click', () => openModal('add-teacher-modal'));
             addClassBtn.addEventListener('click', () => openModal('add-class-modal'));
             
-            // Profile image upload handling
-            studentProfileImage.addEventListener('change', function(e) {
-                if (e.target.files.length > 0) {
-                    studentProfileFile = e.target.files[0];
-                    studentProfileName.textContent = studentProfileFile.name;
-                    
+            // Avatar upload handling
+            studentAvatarInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    studentAvatarFile = file;
                     const reader = new FileReader();
                     reader.onload = function(event) {
-                        studentProfilePreview.src = event.target.result;
+                        studentAvatarPreview.src = event.target.result;
                     };
-                    reader.readAsDataURL(studentProfileFile);
+                    reader.readAsDataURL(file);
                 }
             });
             
-            teacherProfileImage.addEventListener('change', function(e) {
-                if (e.target.files.length > 0) {
-                    teacherProfileFile = e.target.files[0];
-                    teacherProfileName.textContent = teacherProfileFile.name;
-                    
+            teacherAvatarInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    teacherAvatarFile = file;
                     const reader = new FileReader();
                     reader.onload = function(event) {
-                        teacherProfilePreview.src = event.target.result;
+                        teacherAvatarPreview.src = event.target.result;
                     };
-                    reader.readAsDataURL(teacherProfileFile);
+                    reader.readAsDataURL(file);
                 }
             });
             
-            editStudentProfileImage.addEventListener('change', function(e) {
-                if (e.target.files.length > 0) {
-                    editStudentProfileFile = e.target.files[0];
-                    editStudentProfileName.textContent = editStudentProfileFile.name;
-                    
+            editStudentAvatarInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    editStudentAvatarFile = file;
                     const reader = new FileReader();
                     reader.onload = function(event) {
-                        editStudentProfilePreview.src = event.target.result;
+                        editStudentAvatarPreview.src = event.target.result;
                     };
-                    reader.readAsDataURL(editStudentProfileFile);
+                    reader.readAsDataURL(file);
                 }
             });
             
-            editTeacherProfileImage.addEventListener('change', function(e) {
-                if (e.target.files.length > 0) {
-                    editTeacherProfileFile = e.target.files[0];
-                    editTeacherProfileName.textContent = editTeacherProfileFile.name;
-                    
+            editTeacherAvatarInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    editTeacherAvatarFile = file;
                     const reader = new FileReader();
                     reader.onload = function(event) {
-                        editTeacherProfilePreview.src = event.target.result;
+                        editTeacherAvatarPreview.src = event.target.result;
                     };
-                    reader.readAsDataURL(editTeacherProfileFile);
+                    reader.readAsDataURL(file);
                 }
+            });
+            
+            // Student search functionality
+            studentSearchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                const rows = document.querySelectorAll('#students-table-body tr');
+                
+                rows.forEach(row => {
+                    const name = row.querySelector('td:nth-child(3)').textContent.toLowerCase();
+                    const email = row.querySelector('td:nth-child(4)').textContent.toLowerCase();
+                    const classText = row.querySelector('td:nth-child(5)').textContent.toLowerCase();
+                    
+                    if (name.includes(searchTerm) || email.includes(searchTerm) || classText.includes(searchTerm)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
             });
             
             // Login form submission
@@ -1873,6 +1993,22 @@
                 });
             });
             
+            // Upload avatar to Firebase Storage
+            async function uploadAvatar(file, path) {
+                if (!file) return null;
+                
+                try {
+                    const storageReference = firebase.storageRef(storage, `avatars/${path}`);
+                    await firebase.uploadBytes(storageReference, file);
+                    const downloadURL = await firebase.getDownloadURL(storageReference);
+                    return downloadURL;
+                } catch (error) {
+                    console.error('Error uploading avatar:', error);
+                    showToast('Error uploading avatar: ' + error.message, 'error');
+                    return null;
+                }
+            }
+            
             // Load data from Firebase
             function loadData() {
                 // Load students
@@ -1889,7 +2025,7 @@
                         const row = document.createElement('tr');
                         
                         row.innerHTML = `
-                            <td><img src="${student.profileImage || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(student.name) + '&background=6c5ce7&color=fff'}" alt="${student.name}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;"></td>
+                            <td><img src="${student.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(student.name) + '&background=6c5ce7&color=fff'}" alt="${student.name}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;"></td>
                             <td>${id.substring(0, 8)}</td>
                             <td>${student.name}</td>
                             <td>${student.email}</td>
@@ -1958,7 +2094,7 @@
                         const row = document.createElement('tr');
                         
                         row.innerHTML = `
-                            <td><img src="${teacher.profileImage || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(teacher.name) + '&background=6c5ce7&color=fff'}" alt="${teacher.name}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;"></td>
+                            <td><img src="${teacher.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(teacher.name) + '&background=6c5ce7&color=fff'}" alt="${teacher.name}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;"></td>
                             <td>${id.substring(0, 8)}</td>
                             <td>${teacher.name}</td>
                             <td>${teacher.email}</td>
@@ -2028,6 +2164,12 @@
                             const classCard = document.createElement('div');
                             classCard.className = 'class-card';
                             
+                            // Get students for this class
+                            const studentsList = cls.students ? cls.students.map(studentId => {
+                                const student = students[studentId];
+                                return student ? student.name : 'Unknown Student';
+                            }) : [];
+                            
                             classCard.innerHTML = `
                                 <div class="class-card-header">
                                     <div class="class-card-title">${cls.name}</div>
@@ -2048,6 +2190,11 @@
                                 <div class="class-card-students">
                                     <i class="fas fa-users"></i>
                                     <span>Students: ${cls.students ? cls.students.length : 0}</span>
+                                </div>
+                                <div class="class-students-list">
+                                    ${studentsList.length > 0 ? 
+                                        studentsList.map(student => `<p>${student}</p>`).join('') : 
+                                        '<p>No students enrolled</p>'}
                                 </div>
                             `;
                             
@@ -2151,44 +2298,6 @@
                 }
             }
             
-            // Upload profile image to Firebase Storage
-            async function uploadProfileImage(file, path) {
-                if (!file) return null;
-                
-                try {
-                    // Create a reference to the storage location
-                    const storageReference = firebase.storageRef(storage, `${path}/${file.name}`);
-                    
-                    // Upload the file
-                    const snapshot = await firebase.uploadBytes(storageReference, file);
-                    
-                    // Get the download URL
-                    const downloadURL = await firebase.getDownloadURL(snapshot.ref);
-                    
-                    return downloadURL;
-                } catch (error) {
-                    console.error('Error uploading profile image:', error);
-                    showToast('Error uploading profile image: ' + error.message, 'error');
-                    return null;
-                }
-            }
-            
-            // Delete profile image from Firebase Storage
-            async function deleteProfileImage(url) {
-                if (!url) return;
-                
-                try {
-                    // Create a reference to the file to delete
-                    const storageReference = firebase.storageRef(storage, url);
-                    
-                    // Delete the file
-                    await firebase.deleteObject(storageReference);
-                } catch (error) {
-                    console.error('Error deleting profile image:', error);
-                    showToast('Error deleting old profile image: ' + error.message, 'error');
-                }
-            }
-            
             // Log activity
             function logActivity(action, user) {
                 const activity = {
@@ -2211,6 +2320,57 @@
                 return { id, password };
             }
             
+            // Send email using Brevo API
+            async function sendCredentialsEmail(email, id, password, role, name) {
+                const emailSubject = `Your ${role} credentials for EduManage Pro`;
+                const emailContent = `
+                    <p>Dear ${name},</p>
+                    <p>Your ${role} account has been created successfully in EduManage Pro.</p>
+                    <p>Here are your login credentials:</p>
+                    <p><strong>ID:</strong> ${id}</p>
+                    <p><strong>Password:</strong> ${password}</p>
+                    <p>Please keep this information secure and do not share it with anyone.</p>
+                    <p>You can login at: <a href="#">EduManage Pro Portal</a></p>
+                    <p>Best regards,<br>EduManage Pro Team</p>
+                `;
+                
+                const emailData = {
+                    sender: {
+                        name: "EduManage Pro",
+                        email: "noreply@edumanagepro.com"
+                    },
+                    to: [{
+                        email: email,
+                        name: name
+                    }],
+                    subject: emailSubject,
+                    htmlContent: emailContent
+                };
+                
+                try {
+                    const response = await fetch(BREVO_API_URL, {
+                        method: 'POST',
+                        headers: {
+                            'accept': 'application/json',
+                            'api-key': BREVO_API_KEY,
+                            'content-type': 'application/json'
+                        },
+                        body: JSON.stringify(emailData)
+                    });
+                    
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.message || 'Failed to send email');
+                    }
+                    
+                    return true;
+                } catch (error) {
+                    console.error('Error sending email:', error);
+                    showToast('Error sending credentials email: ' + error.message, 'error');
+                    return false;
+                }
+            }
+            
             // Add Student
             document.getElementById('add-student-form').addEventListener('submit', async function(e) {
                 e.preventDefault();
@@ -2219,34 +2379,40 @@
                 const studentName = document.getElementById('student-name').value;
                 const studentEmail = document.getElementById('student-email').value;
                 
+                // Upload avatar if selected
+                const avatarUrl = await uploadAvatar(studentAvatarFile, `students/${id}`);
+                
+                const studentData = {
+                    id,
+                    name: studentName,
+                    email: studentEmail,
+                    dob: document.getElementById('student-dob').value,
+                    gender: document.getElementById('student-gender').value,
+                    class: document.getElementById('student-class').value,
+                    parent: document.getElementById('student-parent').value,
+                    phone: document.getElementById('student-phone').value,
+                    status: 'Active',
+                    password: password, // In a real app, you would hash this before storing
+                    avatar: avatarUrl || null
+                };
+                
                 try {
-                    // Upload profile image if selected
-                    const profileImageUrl = await uploadProfileImage(studentProfileFile, `students/${id}`);
-                    
-                    const studentData = {
-                        id,
-                        name: studentName,
-                        email: studentEmail,
-                        dob: document.getElementById('student-dob').value,
-                        gender: document.getElementById('student-gender').value,
-                        class: document.getElementById('student-class').value,
-                        parent: document.getElementById('student-parent').value,
-                        phone: document.getElementById('student-phone').value,
-                        status: 'Active',
-                        password: password, // In a real app, you would hash this before storing
-                        profileImage: profileImageUrl || null
-                    };
-                    
                     // Save to Firebase
                     await firebase.set(firebase.ref(db, 'students/' + id), studentData);
                     
-                    showToast(`Student added successfully!`, 'success');
+                    // Send email with credentials
+                    const emailSent = await sendCredentialsEmail(studentEmail, id, password, 'student', studentName);
+                    
+                    if (emailSent) {
+                        showToast(`Student added successfully! Credentials sent to ${studentEmail}`, 'success');
+                    } else {
+                        showToast(`Student added but failed to send email. Credentials: ID: ${id}, Password: ${password}`, 'warning');
+                    }
                     
                     // Reset form and close modal
                     this.reset();
-                    studentProfilePreview.src = 'https://ui-avatars.com/api/?name=Student&background=6c5ce7&color=fff';
-                    studentProfileName.textContent = 'No file chosen';
-                    studentProfileFile = null;
+                    studentAvatarPreview.src = 'https://ui-avatars.com/api/?name=New+Student&background=6c5ce7&color=fff';
+                    studentAvatarFile = null;
                     closeAllModals();
                     
                     // Refresh student list
@@ -2266,31 +2432,31 @@
                 const teacherName = document.getElementById('teacher-name').value;
                 const teacherEmail = document.getElementById('teacher-email').value;
                 
+                // Get selected classes
+                const selectedClasses = [];
+                document.querySelectorAll('#teacher-classes-checkboxes input[type="checkbox"]:checked').forEach(checkbox => {
+                    selectedClasses.push(checkbox.value);
+                });
+                
+                // Upload avatar if selected
+                const avatarUrl = await uploadAvatar(teacherAvatarFile, `teachers/${id}`);
+                
+                const teacherData = {
+                    id,
+                    name: teacherName,
+                    email: teacherEmail,
+                    dob: document.getElementById('teacher-dob').value,
+                    gender: document.getElementById('teacher-gender').value,
+                    subject: document.getElementById('teacher-subject').value,
+                    community: document.getElementById('teacher-community').value,
+                    qualification: document.getElementById('teacher-qualification').value,
+                    classes: selectedClasses,
+                    status: 'Active',
+                    password: password, // In a real app, you would hash this before storing
+                    avatar: avatarUrl || null
+                };
+                
                 try {
-                    // Get selected classes
-                    const selectedClasses = [];
-                    document.querySelectorAll('#teacher-classes-checkboxes input[type="checkbox"]:checked').forEach(checkbox => {
-                        selectedClasses.push(checkbox.value);
-                    });
-                    
-                    // Upload profile image if selected
-                    const profileImageUrl = await uploadProfileImage(teacherProfileFile, `teachers/${id}`);
-                    
-                    const teacherData = {
-                        id,
-                        name: teacherName,
-                        email: teacherEmail,
-                        dob: document.getElementById('teacher-dob').value,
-                        gender: document.getElementById('teacher-gender').value,
-                        subject: document.getElementById('teacher-subject').value,
-                        community: document.getElementById('teacher-community').value,
-                        qualification: document.getElementById('teacher-qualification').value,
-                        classes: selectedClasses,
-                        status: 'Active',
-                        password: password, // In a real app, you would hash this before storing
-                        profileImage: profileImageUrl || null
-                    };
-                    
                     // Save to Firebase
                     await firebase.set(firebase.ref(db, 'teachers/' + id), teacherData);
                     
@@ -2308,13 +2474,19 @@
                         }
                     }
                     
-                    showToast(`Teacher added successfully!`, 'success');
+                    // Send email with credentials
+                    const emailSent = await sendCredentialsEmail(teacherEmail, id, password, 'teacher', teacherName);
+                    
+                    if (emailSent) {
+                        showToast(`Teacher added successfully! Credentials sent to ${teacherEmail}`, 'success');
+                    } else {
+                        showToast(`Teacher added but failed to send email. Credentials: ID: ${id}, Password: ${password}`, 'warning');
+                    }
                     
                     // Reset form and close modal
                     this.reset();
-                    teacherProfilePreview.src = 'https://ui-avatars.com/api/?name=Teacher&background=6c5ce7&color=fff';
-                    teacherProfileName.textContent = 'No file chosen';
-                    teacherProfileFile = null;
+                    teacherAvatarPreview.src = 'https://ui-avatars.com/api/?name=New+Teacher&background=6c5ce7&color=fff';
+                    teacherAvatarFile = null;
                     closeAllModals();
                     
                     // Refresh teacher list
@@ -2333,16 +2505,16 @@
                 const classId = 'CL' + Math.floor(1000 + Math.random() * 9000);
                 const className = document.getElementById('class-name').value;
                 
+                const classData = {
+                    id: classId,
+                    name: className,
+                    teacher: document.getElementById('class-teacher').value,
+                    schedule: document.getElementById('class-schedule').value,
+                    room: document.getElementById('class-room').value,
+                    students: []
+                };
+                
                 try {
-                    const classData = {
-                        id: classId,
-                        name: className,
-                        teacher: document.getElementById('class-teacher').value,
-                        schedule: document.getElementById('class-schedule').value,
-                        room: document.getElementById('class-room').value,
-                        students: []
-                    };
-                    
                     // Save to Firebase
                     await firebase.set(firebase.ref(db, 'classes/' + classId), classData);
                     
@@ -2377,12 +2549,12 @@
                         document.getElementById('edit-student-parent').value = student.parent;
                         document.getElementById('edit-student-phone').value = student.phone;
                         
-                        // Set profile image preview
-                        editStudentProfilePreview.src = student.profileImage || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(student.name) + '&background=6c5ce7&color=fff';
-                        
                         // Set current class for the dropdown
                         const classSelect = document.getElementById('edit-student-class');
                         classSelect.dataset.currentClass = student.class || '';
+                        
+                        // Set avatar preview
+                        editStudentAvatarPreview.src = student.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(student.name) + '&background=6c5ce7&color=fff';
                         
                         // Load classes for dropdown
                         loadData();
@@ -2402,6 +2574,10 @@
                 
                 const id = document.getElementById('edit-student-id').value;
                 const studentName = document.getElementById('edit-student-name').value;
+                
+                // Upload new avatar if selected
+                const avatarUrl = editStudentAvatarFile ? await uploadAvatar(editStudentAvatarFile, `students/${id}`) : null;
+                
                 const studentData = {
                     name: studentName,
                     email: document.getElementById('edit-student-email').value,
@@ -2413,29 +2589,19 @@
                     status: 'Active'
                 };
                 
+                // Only update avatar if a new one was uploaded
+                if (avatarUrl) {
+                    studentData.avatar = avatarUrl;
+                }
+                
                 try {
-                    // First get the old student data to check for profile image changes
-                    const oldStudentSnapshot = await firebase.get(firebase.child(studentsRef, id));
-                    const oldStudent = oldStudentSnapshot.val();
-                    
-                    // Upload new profile image if selected
-                    if (editStudentProfileFile) {
-                        // Delete old profile image if it exists
-                        if (oldStudent.profileImage) {
-                            await deleteProfileImage(oldStudent.profileImage);
-                        }
-                        
-                        // Upload new image
-                        const profileImageUrl = await uploadProfileImage(editStudentProfileFile, `students/${id}`);
-                        studentData.profileImage = profileImageUrl;
-                    }
-                    
                     // Update in Firebase
                     await firebase.update(firebase.ref(db, 'students/' + id), studentData);
                     
                     showToast('Student updated successfully!', 'success');
                     
                     // Close modal and refresh data
+                    editStudentAvatarFile = null;
                     closeAllModals();
                     loadData();
                     logActivity(`Updated student: ${studentName}`, 'Admin');
@@ -2462,8 +2628,8 @@
                         document.getElementById('edit-teacher-community').value = teacher.community;
                         document.getElementById('edit-teacher-qualification').value = teacher.qualification;
                         
-                        // Set profile image preview
-                        editTeacherProfilePreview.src = teacher.profileImage || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(teacher.name) + '&background=6c5ce7&color=fff';
+                        // Set avatar preview
+                        editTeacherAvatarPreview.src = teacher.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(teacher.name) + '&background=6c5ce7&color=fff';
                         
                         // Clear and prepare the classes checkboxes
                         const checkboxesContainer = document.getElementById('edit-teacher-classes-checkboxes');
@@ -2503,40 +2669,36 @@
                 const id = document.getElementById('edit-teacher-id').value;
                 const teacherName = document.getElementById('edit-teacher-name').value;
                 
+                // Get selected classes
+                const selectedClasses = [];
+                document.querySelectorAll('#edit-teacher-classes-checkboxes input[type="checkbox"]:checked').forEach(checkbox => {
+                    selectedClasses.push(checkbox.value);
+                });
+                
+                // Upload new avatar if selected
+                const avatarUrl = editTeacherAvatarFile ? await uploadAvatar(editTeacherAvatarFile, `teachers/${id}`) : null;
+                
+                const teacherData = {
+                    name: teacherName,
+                    email: document.getElementById('edit-teacher-email').value,
+                    dob: document.getElementById('edit-teacher-dob').value,
+                    gender: document.getElementById('edit-teacher-gender').value,
+                    subject: document.getElementById('edit-teacher-subject').value,
+                    community: document.getElementById('edit-teacher-community').value,
+                    qualification: document.getElementById('edit-teacher-qualification').value,
+                    classes: selectedClasses,
+                    status: 'Active'
+                };
+                
+                // Only update avatar if a new one was uploaded
+                if (avatarUrl) {
+                    teacherData.avatar = avatarUrl;
+                }
+                
                 try {
-                    // First get the old teacher data to check for profile image and class changes
+                    // First, get the old teacher data to check for class changes
                     const oldTeacherSnapshot = await firebase.get(firebase.child(teachersRef, id));
                     const oldTeacher = oldTeacherSnapshot.val();
-                    
-                    // Get selected classes
-                    const selectedClasses = [];
-                    document.querySelectorAll('#edit-teacher-classes-checkboxes input[type="checkbox"]:checked').forEach(checkbox => {
-                        selectedClasses.push(checkbox.value);
-                    });
-                    
-                    const teacherData = {
-                        name: teacherName,
-                        email: document.getElementById('edit-teacher-email').value,
-                        dob: document.getElementById('edit-teacher-dob').value,
-                        gender: document.getElementById('edit-teacher-gender').value,
-                        subject: document.getElementById('edit-teacher-subject').value,
-                        community: document.getElementById('edit-teacher-community').value,
-                        qualification: document.getElementById('edit-teacher-qualification').value,
-                        classes: selectedClasses,
-                        status: 'Active'
-                    };
-                    
-                    // Upload new profile image if selected
-                    if (editTeacherProfileFile) {
-                        // Delete old profile image if it exists
-                        if (oldTeacher.profileImage) {
-                            await deleteProfileImage(oldTeacher.profileImage);
-                        }
-                        
-                        // Upload new image
-                        const profileImageUrl = await uploadProfileImage(editTeacherProfileFile, `teachers/${id}`);
-                        teacherData.profileImage = profileImageUrl;
-                    }
                     
                     // Update teacher in Firebase
                     await firebase.update(firebase.ref(db, 'teachers/' + id), teacherData);
@@ -2569,6 +2731,7 @@
                     showToast('Teacher updated successfully!', 'success');
                     
                     // Close modal and refresh data
+                    editTeacherAvatarFile = null;
                     closeAllModals();
                     loadData();
                     logActivity(`Updated teacher: ${teacherName}`, 'Admin');
@@ -2595,6 +2758,79 @@
                         const teacherSelect = document.getElementById('edit-class-teacher');
                         teacherSelect.dataset.currentTeacher = cls.teacher || '';
                         
+                        // Load students in this class
+                        const studentsListContainer = document.getElementById('class-students-list');
+                        studentsListContainer.innerHTML = '';
+                        
+                        if (cls.students && cls.students.length > 0) {
+                            const studentsSnapshot = await firebase.get(firebase.child(studentsRef, '/'));
+                            const students = studentsSnapshot.val() || {};
+                            
+                            cls.students.forEach(studentId => {
+                                const student = students[studentId];
+                                if (student) {
+                                    const studentItem = document.createElement('div');
+                                    studentItem.className = 'student-list-item';
+                                    studentItem.innerHTML = `
+                                        <img src="${student.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(student.name) + '&background=6c5ce7&color=fff'}" 
+                                             class="student-avatar" alt="${student.name}">
+                                        <span class="student-name">${student.name}</span>
+                                        <button class="remove-student-btn" data-id="${studentId}">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    `;
+                                    studentsListContainer.appendChild(studentItem);
+                                }
+                            });
+                            
+                            // Add event listeners to remove buttons
+                            document.querySelectorAll('#class-students-list .remove-student-btn').forEach(btn => {
+                                btn.addEventListener('click', async function() {
+                                    const studentId = this.getAttribute('data-id');
+                                    await removeStudentFromClass(id, studentId);
+                                });
+                            });
+                        } else {
+                            studentsListContainer.innerHTML = '<p>No students in this class</p>';
+                        }
+                        
+                        // Load available students to add to class
+                        const availableStudentsContainer = document.getElementById('available-students-list');
+                        availableStudentsContainer.innerHTML = '';
+                        
+                        const studentsSnapshot = await firebase.get(firebase.child(studentsRef, '/'));
+                        const students = studentsSnapshot.val() || {};
+                        
+                        for (const studentId in students) {
+                            const student = students[studentId];
+                            // Only show students not already in this class
+                            if (!cls.students || !cls.students.includes(studentId)) {
+                                const studentItem = document.createElement('div');
+                                studentItem.className = 'available-student-item';
+                                studentItem.innerHTML = `
+                                    <img src="${student.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(student.name) + '&background=6c5ce7&color=fff'}" 
+                                         class="student-avatar" alt="${student.name}">
+                                    <span class="student-name">${student.name}</span>
+                                    <button class="add-student-btn" data-id="${studentId}">
+                                        <i class="fas fa-plus"></i> Add
+                                    </button>
+                                `;
+                                availableStudentsContainer.appendChild(studentItem);
+                            }
+                        }
+                        
+                        if (availableStudentsContainer.children.length === 0) {
+                            availableStudentsContainer.innerHTML = '<p>No available students to add</p>';
+                        }
+                        
+                        // Add event listeners to add buttons
+                        document.querySelectorAll('#available-students-list .add-student-btn').forEach(btn => {
+                            btn.addEventListener('click', async function() {
+                                const studentId = this.getAttribute('data-id');
+                                await addStudentToClass(id, studentId);
+                            });
+                        });
+                        
                         // Load teachers for dropdown
                         loadData();
                         
@@ -2607,6 +2843,74 @@
                 }
             }
             
+            // Add student to class
+            async function addStudentToClass(classId, studentId) {
+                try {
+                    // Get current class data
+                    const classSnapshot = await firebase.get(firebase.child(classesRef, classId));
+                    const cls = classSnapshot.val();
+                    
+                    // Get student data
+                    const studentSnapshot = await firebase.get(firebase.child(studentsRef, studentId));
+                    const student = studentSnapshot.val();
+                    
+                    // Update class students array
+                    const updatedStudents = cls.students ? [...cls.students, studentId] : [studentId];
+                    
+                    await firebase.update(firebase.ref(db, `classes/${classId}`), {
+                        students: updatedStudents
+                    });
+                    
+                    // Update student's class
+                    await firebase.update(firebase.ref(db, `students/${studentId}`), {
+                        class: cls.name
+                    });
+                    
+                    showToast(`Student ${student.name} added to class ${cls.name}`, 'success');
+                    
+                    // Refresh the edit class modal
+                    editClass(classId);
+                    logActivity(`Added student ${student.name} to class ${cls.name}`, 'Admin');
+                } catch (error) {
+                    console.error('Error adding student to class:', error);
+                    showToast('Error adding student to class: ' + error.message, 'error');
+                }
+            }
+            
+            // Remove student from class
+            async function removeStudentFromClass(classId, studentId) {
+                try {
+                    // Get current class data
+                    const classSnapshot = await firebase.get(firebase.child(classesRef, classId));
+                    const cls = classSnapshot.val();
+                    
+                    // Get student data
+                    const studentSnapshot = await firebase.get(firebase.child(studentsRef, studentId));
+                    const student = studentSnapshot.val();
+                    
+                    // Update class students array
+                    const updatedStudents = cls.students.filter(id => id !== studentId);
+                    
+                    await firebase.update(firebase.ref(db, `classes/${classId}`), {
+                        students: updatedStudents
+                    });
+                    
+                    // Remove class from student
+                    await firebase.update(firebase.ref(db, `students/${studentId}`), {
+                        class: ''
+                    });
+                    
+                    showToast(`Student ${student.name} removed from class ${cls.name}`, 'success');
+                    
+                    // Refresh the edit class modal
+                    editClass(classId);
+                    logActivity(`Removed student ${student.name} from class ${cls.name}`, 'Admin');
+                } catch (error) {
+                    console.error('Error removing student from class:', error);
+                    showToast('Error removing student from class: ' + error.message, 'error');
+                }
+            }
+            
             // Edit Class Form Submission
             document.getElementById('edit-class-form').addEventListener('submit', async function(e) {
                 e.preventDefault();
@@ -2614,14 +2918,14 @@
                 const id = document.getElementById('edit-class-id').value;
                 const className = document.getElementById('edit-class-name').value;
                 
+                const classData = {
+                    name: className,
+                    teacher: document.getElementById('edit-class-teacher').value,
+                    schedule: document.getElementById('edit-class-schedule').value,
+                    room: document.getElementById('edit-class-room').value
+                };
+                
                 try {
-                    const classData = {
-                        name: className,
-                        teacher: document.getElementById('edit-class-teacher').value,
-                        schedule: document.getElementById('edit-class-schedule').value,
-                        room: document.getElementById('edit-class-room').value
-                    };
-                    
                     // Update in Firebase
                     await firebase.update(firebase.ref(db, 'classes/' + id), classData);
                     
@@ -2663,15 +2967,15 @@
             document.getElementById('school-settings-form').addEventListener('submit', async function(e) {
                 e.preventDefault();
                 
+                const settings = {
+                    name: document.getElementById('school-name').value,
+                    address: document.getElementById('school-address').value,
+                    phone: document.getElementById('school-phone').value,
+                    email: document.getElementById('school-email').value,
+                    updatedAt: new Date().toISOString()
+                };
+                
                 try {
-                    const settings = {
-                        name: document.getElementById('school-name').value,
-                        address: document.getElementById('school-address').value,
-                        phone: document.getElementById('school-phone').value,
-                        email: document.getElementById('school-email').value,
-                        updatedAt: new Date().toISOString()
-                    };
-                    
                     await firebase.set(schoolRef, settings);
                     showToast('Settings saved successfully!', 'success');
                     logActivity('Updated system settings', 'Admin');
@@ -2684,14 +2988,9 @@
             async function deleteStudent(id) {
                 if (confirm('Are you sure you want to delete this student?')) {
                     try {
-                        // First get the student data to log the name and delete profile image
+                        // First get the student data to log the name
                         const snapshot = await firebase.get(firebase.child(studentsRef, id));
                         const student = snapshot.val();
-                        
-                        // Delete profile image if it exists
-                        if (student.profileImage) {
-                            await deleteProfileImage(student.profileImage);
-                        }
                         
                         // Remove from Firebase
                         await firebase.remove(firebase.ref(db, 'students/' + id));
@@ -2722,14 +3021,9 @@
             async function deleteTeacher(id) {
                 if (confirm('Are you sure you want to delete this teacher?')) {
                     try {
-                        // First get the teacher data to log the name and delete profile image
+                        // First get the teacher data to log the name
                         const snapshot = await firebase.get(firebase.child(teachersRef, id));
                         const teacher = snapshot.val();
-                        
-                        // Delete profile image if it exists
-                        if (teacher.profileImage) {
-                            await deleteProfileImage(teacher.profileImage);
-                        }
                         
                         // Remove from Firebase
                         await firebase.remove(firebase.ref(db, 'teachers/' + id));
@@ -2779,6 +3073,15 @@
                             }
                         }
                         
+                        // Remove class from students
+                        if (cls.students && cls.students.length > 0) {
+                            const updates = {};
+                            cls.students.forEach(studentId => {
+                                updates[`students/${studentId}/class`] = '';
+                            });
+                            await firebase.update(firebase.ref(db), updates);
+                        }
+                        
                         showToast('Class deleted successfully!', 'success');
                         loadData();
                         logActivity(`Deleted class: ${cls ? cls.name : id}`, 'Admin');
@@ -2822,7 +3125,7 @@
                                 phone: '1234567890',
                                 status: 'Active',
                                 password: 'samplepass1',
-                                profileImage: 'https://randomuser.me/api/portraits/men/32.jpg'
+                                avatar: 'https://ui-avatars.com/api/?name=John+Doe&background=6c5ce7&color=fff'
                             },
                             'SM1002': {
                                 id: 'SM1002',
@@ -2835,7 +3138,7 @@
                                 phone: '9876543210',
                                 status: 'Active',
                                 password: 'samplepass2',
-                                profileImage: 'https://randomuser.me/api/portraits/women/44.jpg'
+                                avatar: 'https://ui-avatars.com/api/?name=Sarah+Smith&background=6c5ce7&color=fff'
                             }
                         };
                         
@@ -2857,7 +3160,7 @@
                                 classes: ['Grade 10A'],
                                 status: 'Active',
                                 password: 'samplepass3',
-                                profileImage: 'https://randomuser.me/api/portraits/men/75.jpg'
+                                avatar: 'https://ui-avatars.com/api/?name=Robert+Johnson&background=6c5ce7&color=fff'
                             },
                             'TM2002': {
                                 id: 'TM2002',
@@ -2871,7 +3174,7 @@
                                 classes: ['Grade 9B'],
                                 status: 'Active',
                                 password: 'samplepass4',
-                                profileImage: 'https://randomuser.me/api/portraits/women/68.jpg'
+                                avatar: 'https://ui-avatars.com/api/?name=Emily+Davis&background=6c5ce7&color=fff'
                             }
                         };
                         
