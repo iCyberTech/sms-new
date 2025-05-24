@@ -1,0 +1,2928 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduManage Pro | School Management System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
+        import { getDatabase, ref, set, get, child, push, update, remove } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-database.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-analytics.js";
+        import { getStorage, ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-storage.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCqJADb4DZTU4EnFHQ0YRM3nzrX9T4D0i4",
+            authDomain: "single-sms-2.firebaseapp.com",
+            projectId: "single-sms-2",
+            storageBucket: "single-sms-2.appspot.com",
+            messagingSenderId: "278253336115",
+            appId: "1:278253336115:web:571567189394308ebc9546",
+            measurementId: "G-GTJXY8MSK3",
+            databaseURL: "https://single-sms-2-default-rtdb.firebaseio.com/"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const database = getDatabase(app);
+        const auth = getAuth(app);
+        const storage = getStorage(app);
+
+        // Make Firebase available globally
+        window.firebase = {
+            database,
+            ref,
+            set,
+            get,
+            child,
+            push,
+            update,
+            remove,
+            auth,
+            createUserWithEmailAndPassword,
+            signInWithEmailAndPassword,
+            signOut,
+            storage,
+            storageRef,
+            uploadBytes,
+            getDownloadURL,
+            deleteObject
+        };
+    </script>
+    <style>
+        :root {
+            --primary-color: #6c5ce7;
+            --secondary-color: #a29bfe;
+            --accent-color: #fd79a8;
+            --dark-color: #2d3436;
+            --light-color: #f5f6fa;
+            --success-color: #00b894;
+            --warning-color: #fdcb6e;
+            --danger-color: #d63031;
+            --shadow: 8px 8px 16px #d1d9e6, -8px -8px 16px #ffffff;
+            --shadow-inset: inset 4px 4px 8px #d1d9e6, inset -4px -4px 8px #ffffff;
+            --border-radius: 15px;
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            color: var(--dark-color);
+            overflow-x: hidden;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 280px;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 30px 20px;
+            box-shadow: var(--shadow);
+            z-index: 10;
+            transition: var(--transition);
+            transform: translateX(-100%);
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .sidebar.active {
+            transform: translateX(0);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-left: 10px;
+        }
+
+        .logo i {
+            font-size: 28px;
+            color: var(--primary-color);
+            margin-right: 10px;
+        }
+
+        .logo h2 {
+            font-size: 22px;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .menu {
+            margin-top: 40px;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .menu-item:hover {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        .menu-item.active {
+            background-color: var(--primary-color);
+            color: white;
+            box-shadow: var(--shadow-inset);
+        }
+
+        .menu-item i {
+            font-size: 20px;
+            margin-right: 15px;
+        }
+
+        .menu-item span {
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            flex: 1;
+            padding: 30px;
+            margin-left: 0;
+            transition: var(--transition);
+            overflow-y: auto;
+            max-height: 100vh;
+        }
+
+        .main-content.active {
+            margin-left: 280px;
+        }
+
+        /* Header Styles */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+        }
+
+        .menu-toggle {
+            font-size: 24px;
+            margin-right: 20px;
+            cursor: pointer;
+            color: var(--dark-color);
+            background: var(--light-color);
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+
+        .menu-toggle:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .page-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .user-info img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: 10px;
+            box-shadow: var(--shadow);
+        }
+
+        .user-info .user-name {
+            font-weight: 500;
+            margin-right: 15px;
+        }
+
+        .logout-btn {
+            background: var(--light-color);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            color: var(--dark-color);
+        }
+
+        .logout-btn:hover {
+            background: var(--danger-color);
+            color: white;
+        }
+
+        /* Dashboard Cards */
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: var(--border-radius);
+            padding: 25px;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 12px 12px 24px #d1d9e6, -12px -12px 24px #ffffff;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .card-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+            box-shadow: var(--shadow);
+        }
+
+        .card-icon.students {
+            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+        }
+
+        .card-icon.teachers {
+            background: linear-gradient(135deg, #a29bfe 0%, #6c5ce7 100%);
+        }
+
+        .card-icon.classes {
+            background: linear-gradient(135deg, #55efc4 0%, #00b894 100%);
+        }
+
+        .card-icon.finance {
+            background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+        }
+
+        .card-title {
+            font-size: 14px;
+            color: #7f8c8d;
+            font-weight: 500;
+        }
+
+        .card-value {
+            font-size: 28px;
+            font-weight: 600;
+            margin: 5px 0;
+        }
+
+        .card-change {
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+        }
+
+        .card-change.positive {
+            color: var(--success-color);
+        }
+
+        .card-change.negative {
+            color: var(--danger-color);
+        }
+
+        /* Content Section */
+        .content-section {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: var(--border-radius);
+            padding: 25px;
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+            max-height: calc(100vh - 200px);
+            overflow-y: auto;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .section-actions button {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+        }
+
+        .section-actions button:hover {
+            background: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+
+        .section-actions button i {
+            margin-right: 5px;
+        }
+
+        /* Table Styles */
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ecf0f1;
+        }
+
+        th {
+            font-weight: 600;
+            color: #7f8c8d;
+            font-size: 14px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        th.sort-asc::after {
+            content: " ↑";
+        }
+
+        th.sort-desc::after {
+            content: " ↓";
+        }
+
+        tr:hover {
+            background-color: rgba(108, 92, 231, 0.05);
+        }
+
+        .status {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status.active {
+            background-color: rgba(0, 184, 148, 0.1);
+            color: var(--success-color);
+        }
+
+        .status.inactive {
+            background-color: rgba(214, 48, 49, 0.1);
+            color: var(--danger-color);
+        }
+
+        .status.paid {
+            background-color: rgba(0, 184, 148, 0.1);
+            color: var(--success-color);
+        }
+
+        .status.partial {
+            background-color: rgba(253, 203, 110, 0.2);
+            color: #e17055;
+        }
+
+        .status.unpaid {
+            background-color: rgba(214, 48, 49, 0.1);
+            color: var(--danger-color);
+        }
+
+        .action-btn {
+            padding: 5px 10px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: var(--transition);
+            margin-right: 5px;
+        }
+
+        .edit-btn {
+            background-color: rgba(253, 203, 110, 0.2);
+            color: #e17055;
+        }
+
+        .edit-btn:hover {
+            background-color: rgba(253, 203, 110, 0.4);
+        }
+
+        .delete-btn {
+            background-color: rgba(214, 48, 49, 0.2);
+            color: var(--danger-color);
+        }
+
+        .delete-btn:hover {
+            background-color: rgba(214, 48, 49, 0.4);
+        }
+
+        /* Form Styles */
+        .form-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            box-shadow: var(--shadow);
+            overflow-y: auto;
+            max-height: 80vh;
+        }
+
+        .form-title {
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 25px;
+            color: var(--primary-color);
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 20px;
+        }
+
+        .form-col {
+            flex: 1;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--dark-color);
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: none;
+            border-radius: var(--border-radius);
+            background: var(--light-color);
+            box-shadow: var(--shadow-inset);
+            font-size: 14px;
+            transition: var(--transition);
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            box-shadow: inset 4px 4px 8px #d1d9e6, inset -4px -4px 8px #ffffff, 0 0 0 2px var(--secondary-color);
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border-radius: var(--border-radius);
+            border: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+            box-shadow: var(--shadow);
+        }
+
+        .btn-primary:hover {
+            background: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: var(--light-color);
+            color: var(--dark-color);
+            box-shadow: var(--shadow);
+        }
+
+        .btn-secondary:hover {
+            background: #dfe6e9;
+            transform: translateY(-2px);
+        }
+
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition);
+        }
+
+        .modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: var(--border-radius);
+            width: 90%;
+            max-width: 700px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transform: translateY(-20px);
+            transition: var(--transition);
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .modal.active .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-shrink: 0;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #7f8c8d;
+        }
+
+        /* Login Page Styles */
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-radius: var(--border-radius);
+            padding: 40px;
+            width: 100%;
+            max-width: 450px;
+            box-shadow: var(--shadow);
+            text-align: center;
+        }
+
+        .login-logo {
+            margin-bottom: 30px;
+        }
+
+        .login-logo i {
+            font-size: 50px;
+            color: var(--primary-color);
+        }
+
+        .login-logo h1 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-top: 15px;
+            color: var(--primary-color);
+        }
+
+        .login-message {
+            margin-bottom: 30px;
+            color: #7f8c8d;
+        }
+
+        /* Grid View for Classes */
+        .classes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .class-card {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+
+        .class-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .class-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .class-card-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .class-card-teacher {
+            font-size: 14px;
+            color: #7f8c8d;
+            margin-bottom: 10px;
+        }
+
+        .class-card-schedule {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .class-card-schedule i {
+            margin-right: 8px;
+            color: var(--primary-color);
+        }
+
+        .class-card-room {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .class-card-room i {
+            margin-right: 8px;
+            color: var(--primary-color);
+        }
+
+        .class-card-students {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .class-card-students i {
+            margin-right: 8px;
+            color: var(--primary-color);
+        }
+
+        .class-card-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        /* Checkbox styles */
+        .checkbox-group {
+            margin-bottom: 15px;
+        }
+
+        .checkbox-label {
+            display: block;
+            position: relative;
+            padding-left: 35px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            font-size: 14px;
+            user-select: none;
+        }
+
+        .checkbox-label input {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+            height: 0;
+            width: 0;
+        }
+
+        .checkmark {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 20px;
+            width: 20px;
+            background-color: #eee;
+            border-radius: 4px;
+        }
+
+        .checkbox-label:hover input ~ .checkmark {
+            background-color: #ccc;
+        }
+
+        .checkbox-label input:checked ~ .checkmark {
+            background-color: var(--primary-color);
+        }
+
+        .checkmark:after {
+            content: "";
+            position: absolute;
+            display: none;
+        }
+
+        .checkbox-label input:checked ~ .checkmark:after {
+            display: block;
+        }
+
+        .checkbox-label .checkmark:after {
+            left: 7px;
+            top: 3px;
+            width: 5px;
+            height: 10px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+
+        /* Profile Image Upload */
+        .profile-image-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .profile-image-preview {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--primary-color);
+            margin-bottom: 15px;
+            box-shadow: var(--shadow);
+        }
+
+        .profile-image-upload {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .profile-image-upload-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+        }
+
+        .profile-image-upload-btn:hover {
+            background: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+
+        .profile-image-upload-btn i {
+            margin-right: 5px;
+        }
+
+        .profile-image-file {
+            display: none;
+        }
+
+        .profile-image-name {
+            margin-top: 10px;
+            font-size: 12px;
+            color: #7f8c8d;
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 992px) {
+            .main-content.active {
+                margin-left: 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+            
+            .cards {
+                grid-template-columns: 1fr;
+            }
+            
+            .modal-content {
+                width: 95%;
+                padding: 20px;
+            }
+
+            .classes-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Animation */
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .floating {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        /* Utility Classes */
+        .text-center {
+            text-align: center;
+        }
+
+        .mb-20 {
+            margin-bottom: 20px;
+        }
+
+        .mt-20 {
+            margin-top: 20px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Scrollbar styles */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #333;
+            color: white;
+            padding: 16px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            max-width: 350px;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toast.success {
+            background-color: var(--success-color);
+        }
+
+        .toast.error {
+            background-color: var(--danger-color);
+        }
+
+        .toast.warning {
+            background-color: var(--warning-color);
+            color: var(--dark-color);
+        }
+
+        .toast-close {
+            background: none;
+            border: none;
+            color: inherit;
+            cursor: pointer;
+            margin-left: 15px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Toast Notification -->
+    <div id="toast" class="toast hidden">
+        <span id="toast-message"></span>
+        <button class="toast-close">&times;</button>
+    </div>
+
+    <!-- Login Page -->
+    <div id="login-page" class="login-container">
+        <div class="login-card">
+            <div class="login-logo">
+                <i class="fas fa-graduation-cap floating"></i>
+                <h1>EduManage Pro</h1>
+            </div>
+            <p class="login-message">Please sign in to access the school management system</p>
+            <form id="login-form">
+                <div class="form-group">
+                    <input type="email" id="login-email" placeholder="Email Address" required>
+                </div>
+                <div class="form-group">
+                    <input type="password" id="login-password" placeholder="Password" required>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">
+                        <i class="fas fa-sign-in-alt"></i> Sign In
+                    </button>
+                </div>
+                <div id="login-error" class="text-center" style="color: var(--danger-color); margin-top: 15px;"></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Application -->
+    <div id="app" class="container hidden">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo">
+                <i class="fas fa-graduation-cap"></i>
+                <h2>EduManage Pro</h2>
+            </div>
+            <div class="menu">
+                <div class="menu-item active" data-section="dashboard">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </div>
+                <div class="menu-item" data-section="students">
+                    <i class="fas fa-users"></i>
+                    <span>Students</span>
+                </div>
+                <div class="menu-item" data-section="teachers">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                    <span>Teachers</span>
+                </div>
+                <div class="menu-item" data-section="classes">
+                    <i class="fas fa-school"></i>
+                    <span>Classes</span>
+                </div>
+                <div class="menu-item" data-section="settings">
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Header -->
+            <div class="header">
+                <div class="header-left">
+                    <div class="menu-toggle">
+                        <i class="fas fa-bars"></i>
+                    </div>
+                    <div class="page-title">
+                        <h1>Dashboard</h1>
+                    </div>
+                </div>
+                <div class="user-info">
+                    <span class="user-name">Admin User</span>
+                    <img src="https://ui-avatars.com/api/?name=Admin+User&background=6c5ce7&color=fff" alt="User">
+                    <button class="logout-btn" id="logout-btn">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Dashboard Section -->
+            <div id="dashboard-section" class="content-section">
+                <div class="cards">
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <div class="card-title">Total Students</div>
+                                <div class="card-value" id="total-students">0</div>
+                                <div class="card-change positive">
+                                    <i class="fas fa-arrow-up"></i> 12% from last month
+                                </div>
+                            </div>
+                            <div class="card-icon students">
+                                <i class="fas fa-users"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <div class="card-title">Total Teachers</div>
+                                <div class="card-value" id="total-teachers">0</div>
+                                <div class="card-change positive">
+                                    <i class="fas fa-arrow-up"></i> 5% from last month
+                                </div>
+                            </div>
+                            <div class="card-icon teachers">
+                                <i class="fas fa-chalkboard-teacher"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <div class="card-title">Total Classes</div>
+                                <div class="card-value" id="total-classes">0</div>
+                                <div class="card-change positive">
+                                    <i class="fas fa-arrow-up"></i> 8% from last month
+                                </div>
+                            </div>
+                            <div class="card-icon classes">
+                                <i class="fas fa-school"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="content-section">
+                    <div class="section-header">
+                        <div class="section-title">Recent Activities</div>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Activity</th>
+                                    <th>User</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="activities-table">
+                                <!-- Activities will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Students Section -->
+            <div id="students-section" class="content-section hidden">
+                <div class="section-header">
+                    <div class="section-title">Student Management</div>
+                    <div class="section-actions">
+                        <button id="add-student-btn">
+                            <i class="fas fa-plus"></i> Add Student
+                        </button>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Photo</th>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Class</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="students-table-body">
+                            <!-- Students will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Teachers Section -->
+            <div id="teachers-section" class="content-section hidden">
+                <div class="section-header">
+                    <div class="section-title">Teacher Management</div>
+                    <div class="section-actions">
+                        <button id="add-teacher-btn">
+                            <i class="fas fa-plus"></i> Add Teacher
+                        </button>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Photo</th>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Subject</th>
+                                <th>Community</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="teachers-table-body">
+                            <!-- Teachers will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Classes Section -->
+            <div id="classes-section" class="content-section hidden">
+                <div class="section-header">
+                    <div class="section-title">Class Management</div>
+                    <div class="section-actions">
+                        <button id="add-class-btn">
+                            <i class="fas fa-plus"></i> Add Class
+                        </button>
+                    </div>
+                </div>
+                <div class="classes-grid" id="classes-grid">
+                    <!-- Classes will be loaded here in grid format -->
+                </div>
+            </div>
+
+            <!-- Settings Section -->
+            <div id="settings-section" class="content-section hidden">
+                <div class="section-header">
+                    <div class="section-title">System Settings</div>
+                </div>
+                <div class="form-container">
+                    <div class="form-title">School Information</div>
+                    <form id="school-settings-form">
+                        <div class="form-group">
+                            <label for="school-name">School Name</label>
+                            <input type="text" id="school-name" placeholder="Enter school name">
+                        </div>
+                        <div class="form-group">
+                            <label for="school-address">Address</label>
+                            <input type="text" id="school-address" placeholder="Enter school address">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-col">
+                                <div class="form-group">
+                                    <label for="school-phone">Phone Number</label>
+                                    <input type="tel" id="school-phone" placeholder="Enter phone number">
+                                </div>
+                            </div>
+                            <div class="form-col">
+                                <div class="form-group">
+                                    <label for="school-email">Email Address</label>
+                                    <input type="email" id="school-email" placeholder="Enter email address">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-secondary">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Student Modal -->
+    <div class="modal" id="add-student-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Add New Student</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <form id="add-student-form">
+                <div class="profile-image-container">
+                    <img id="student-profile-preview" src="https://ui-avatars.com/api/?name=Student&background=6c5ce7&color=fff" alt="Profile Preview" class="profile-image-preview">
+                    <div class="profile-image-upload">
+                        <label for="student-profile-image" class="profile-image-upload-btn">
+                            <i class="fas fa-camera"></i> Upload Photo
+                        </label>
+                        <input type="file" id="student-profile-image" class="profile-image-file" accept="image/*">
+                        <div id="student-profile-name" class="profile-image-name">No file chosen</div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="student-name">Full Name</label>
+                    <input type="text" id="student-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="student-email">Email</label>
+                    <input type="email" id="student-email" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="student-gender">Gender</label>
+                            <select id="student-gender" required>
+                                <option value="">Select Gender</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="student-dob">Date of Birth</label>
+                            <input type="date" id="student-dob" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="student-class">Class</label>
+                    <select id="student-class" required>
+                        <option value="">Select Class</option>
+                        <!-- Classes will be populated here -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="student-parent">Parent Name</label>
+                    <input type="text" id="student-parent" required>
+                </div>
+                <div class="form-group">
+                    <label for="student-phone">Parent Phone</label>
+                    <input type="tel" id="student-phone" required>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary close-modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Student</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Teacher Modal -->
+    <div class="modal" id="add-teacher-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Add New Teacher</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <form id="add-teacher-form">
+                <div class="profile-image-container">
+                    <img id="teacher-profile-preview" src="https://ui-avatars.com/api/?name=Teacher&background=6c5ce7&color=fff" alt="Profile Preview" class="profile-image-preview">
+                    <div class="profile-image-upload">
+                        <label for="teacher-profile-image" class="profile-image-upload-btn">
+                            <i class="fas fa-camera"></i> Upload Photo
+                        </label>
+                        <input type="file" id="teacher-profile-image" class="profile-image-file" accept="image/*">
+                        <div id="teacher-profile-name" class="profile-image-name">No file chosen</div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="teacher-name">Full Name</label>
+                    <input type="text" id="teacher-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="teacher-email">Email</label>
+                    <input type="email" id="teacher-email" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="teacher-gender">Gender</label>
+                            <select id="teacher-gender" required>
+                                <option value="">Select Gender</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="teacher-dob">Date of Birth</label>
+                            <input type="date" id="teacher-dob" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="teacher-subject">Subject</label>
+                    <input type="text" id="teacher-subject" required>
+                </div>
+                <div class="form-group">
+                    <label for="teacher-community">Community</label>
+                    <select id="teacher-community" required>
+                        <option value="">Select Community</option>
+                        <option value="Mathematics">Mathematics</option>
+                        <option value="Science">Science</option>
+                        <option value="Humanities">Humanities</option>
+                        <option value="Arts">Arts</option>
+                        <option value="Sports">Sports</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="teacher-qualification">Qualification</label>
+                    <input type="text" id="teacher-qualification" required>
+                </div>
+                <div class="form-group checkbox-group">
+                    <label>Assign to Classes:</label>
+                    <div id="teacher-classes-checkboxes">
+                        <!-- Class checkboxes will be populated here -->
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary close-modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Teacher</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Class Modal -->
+    <div class="modal" id="add-class-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Add New Class</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <form id="add-class-form">
+                <div class="form-group">
+                    <label for="class-name">Class Name</label>
+                    <input type="text" id="class-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="class-teacher">Class Teacher</label>
+                    <select id="class-teacher" required>
+                        <option value="">Select Teacher</option>
+                        <!-- Teachers will be populated here -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="class-schedule">Schedule</label>
+                    <input type="text" id="class-schedule" placeholder="e.g. Mon-Wed-Fri 9:00-10:30" required>
+                </div>
+                <div class="form-group">
+                    <label for="class-room">Room Number</label>
+                    <input type="text" id="class-room" required>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary close-modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Class</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Class Modal -->
+    <div class="modal" id="edit-class-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Edit Class</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <form id="edit-class-form">
+                <input type="hidden" id="edit-class-id">
+                <div class="form-group">
+                    <label for="edit-class-name">Class Name</label>
+                    <input type="text" id="edit-class-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-class-teacher">Class Teacher</label>
+                    <select id="edit-class-teacher" required>
+                        <option value="">Select Teacher</option>
+                        <!-- Teachers will be populated here -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="edit-class-schedule">Schedule</label>
+                    <input type="text" id="edit-class-schedule" placeholder="e.g. Mon-Wed-Fri 9:00-10:30" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-class-room">Room Number</label>
+                    <input type="text" id="edit-class-room" required>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary close-modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Teacher Modal -->
+    <div class="modal" id="edit-teacher-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Edit Teacher</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <form id="edit-teacher-form">
+                <input type="hidden" id="edit-teacher-id">
+                <div class="profile-image-container">
+                    <img id="edit-teacher-profile-preview" src="" alt="Profile Preview" class="profile-image-preview">
+                    <div class="profile-image-upload">
+                        <label for="edit-teacher-profile-image" class="profile-image-upload-btn">
+                            <i class="fas fa-camera"></i> Change Photo
+                        </label>
+                        <input type="file" id="edit-teacher-profile-image" class="profile-image-file" accept="image/*">
+                        <div id="edit-teacher-profile-name" class="profile-image-name">No file chosen</div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="edit-teacher-name">Full Name</label>
+                    <input type="text" id="edit-teacher-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-teacher-email">Email</label>
+                    <input type="email" id="edit-teacher-email" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="edit-teacher-gender">Gender</label>
+                            <select id="edit-teacher-gender" required>
+                                <option value="">Select Gender</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="edit-teacher-dob">Date of Birth</label>
+                            <input type="date" id="edit-teacher-dob" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="edit-teacher-subject">Subject</label>
+                    <input type="text" id="edit-teacher-subject" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-teacher-community">Community</label>
+                    <select id="edit-teacher-community" required>
+                        <option value="">Select Community</option>
+                        <option value="Mathematics">Mathematics</option>
+                        <option value="Science">Science</option>
+                        <option value="Humanities">Humanities</option>
+                        <option value="Arts">Arts</option>
+                        <option value="Sports">Sports</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="edit-teacher-qualification">Qualification</label>
+                    <input type="text" id="edit-teacher-qualification" required>
+                </div>
+                <div class="form-group checkbox-group">
+                    <label>Assign to Classes:</label>
+                    <div id="edit-teacher-classes-checkboxes">
+                        <!-- Class checkboxes will be populated here -->
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary close-modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Student Modal -->
+    <div class="modal" id="edit-student-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Edit Student</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <form id="edit-student-form">
+                <input type="hidden" id="edit-student-id">
+                <div class="profile-image-container">
+                    <img id="edit-student-profile-preview" src="" alt="Profile Preview" class="profile-image-preview">
+                    <div class="profile-image-upload">
+                        <label for="edit-student-profile-image" class="profile-image-upload-btn">
+                            <i class="fas fa-camera"></i> Change Photo
+                        </label>
+                        <input type="file" id="edit-student-profile-image" class="profile-image-file" accept="image/*">
+                        <div id="edit-student-profile-name" class="profile-image-name">No file chosen</div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="edit-student-name">Full Name</label>
+                    <input type="text" id="edit-student-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-student-email">Email</label>
+                    <input type="email" id="edit-student-email" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="edit-student-gender">Gender</label>
+                            <select id="edit-student-gender" required>
+                                <option value="">Select Gender</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="edit-student-dob">Date of Birth</label>
+                            <input type="date" id="edit-student-dob" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="edit-student-class">Class</label>
+                    <select id="edit-student-class" required>
+                        <option value="">Select Class</option>
+                        <!-- Classes will be populated here -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="edit-student-parent">Parent Name</label>
+                    <input type="text" id="edit-student-parent" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-student-phone">Parent Phone</label>
+                    <input type="tel" id="edit-student-phone" required>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary close-modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // DOM Elements
+            const loginPage = document.getElementById('login-page');
+            const app = document.getElementById('app');
+            const loginForm = document.getElementById('login-form');
+            const loginError = document.getElementById('login-error');
+            const logoutBtn = document.getElementById('logout-btn');
+            
+            // Sidebar and navigation
+            const menuToggle = document.querySelector('.menu-toggle');
+            const sidebar = document.querySelector('.sidebar');
+            const mainContent = document.querySelector('.main-content');
+            const menuItems = document.querySelectorAll('.menu-item');
+            const contentSections = document.querySelectorAll('.content-section');
+            
+            // Modal elements
+            const modals = document.querySelectorAll('.modal');
+            const closeModalButtons = document.querySelectorAll('.close-modal');
+            const addStudentBtn = document.getElementById('add-student-btn');
+            const addTeacherBtn = document.getElementById('add-teacher-btn');
+            const addClassBtn = document.getElementById('add-class-btn');
+            
+            // Profile image upload elements
+            const studentProfileImage = document.getElementById('student-profile-image');
+            const studentProfilePreview = document.getElementById('student-profile-preview');
+            const studentProfileName = document.getElementById('student-profile-name');
+            
+            const teacherProfileImage = document.getElementById('teacher-profile-image');
+            const teacherProfilePreview = document.getElementById('teacher-profile-preview');
+            const teacherProfileName = document.getElementById('teacher-profile-name');
+            
+            const editStudentProfileImage = document.getElementById('edit-student-profile-image');
+            const editStudentProfilePreview = document.getElementById('edit-student-profile-preview');
+            const editStudentProfileName = document.getElementById('edit-student-profile-name');
+            
+            const editTeacherProfileImage = document.getElementById('edit-teacher-profile-image');
+            const editTeacherProfilePreview = document.getElementById('edit-teacher-profile-preview');
+            const editTeacherProfileName = document.getElementById('edit-teacher-profile-name');
+            
+            // Toast elements
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toast-message');
+            const toastClose = document.querySelector('.toast-close');
+            
+            // Firebase references
+            const db = firebase.database;
+            const auth = firebase.auth;
+            const storage = firebase.storage;
+            
+            // Initialize Firebase data references
+            const studentsRef = firebase.ref(db, 'students');
+            const teachersRef = firebase.ref(db, 'teachers');
+            const classesRef = firebase.ref(db, 'classes');
+            const activitiesRef = firebase.ref(db, 'activities');
+            const schoolRef = firebase.ref(db, 'school');
+            
+            // Current user
+            let currentUser = null;
+            
+            // Profile images storage
+            let studentProfileFile = null;
+            let teacherProfileFile = null;
+            let editStudentProfileFile = null;
+            let editTeacherProfileFile = null;
+            
+            // Show toast notification
+            function showToast(message, type = 'success', duration = 5000) {
+                toast.className = `toast ${type} show`;
+                toastMessage.textContent = message;
+                toast.classList.remove('hidden');
+                
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                    setTimeout(() => toast.classList.add('hidden'), 300);
+                }, duration);
+            }
+            
+            // Close toast when close button is clicked
+            toastClose.addEventListener('click', function() {
+                toast.classList.remove('show');
+                setTimeout(() => toast.classList.add('hidden'), 300);
+            });
+            
+            // Toggle sidebar
+            menuToggle.addEventListener('click', function() {
+                sidebar.classList.toggle('active');
+                mainContent.classList.toggle('active');
+            });
+            
+            // Navigation
+            menuItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    // Remove active class from all menu items
+                    menuItems.forEach(i => i.classList.remove('active'));
+                    // Add active class to clicked item
+                    this.classList.add('active');
+                    
+                    // Hide all content sections
+                    contentSections.forEach(section => section.classList.add('hidden'));
+                    
+                    // Show the selected section
+                    const sectionId = this.getAttribute('data-section') + '-section';
+                    document.getElementById(sectionId).classList.remove('hidden');
+                    
+                    // Update page title
+                    const pageTitle = document.querySelector('.page-title h1');
+                    pageTitle.textContent = this.querySelector('span').textContent;
+                    
+                    // Close sidebar on mobile
+                    if (window.innerWidth < 992) {
+                        sidebar.classList.remove('active');
+                        mainContent.classList.remove('active');
+                    }
+                });
+            });
+            
+            // Modal handling
+            function openModal(modalId) {
+                document.getElementById(modalId).classList.add('active');
+            }
+            
+            function closeAllModals() {
+                modals.forEach(modal => modal.classList.remove('active'));
+            }
+            
+            closeModalButtons.forEach(button => {
+                button.addEventListener('click', closeAllModals);
+            });
+            
+            modals.forEach(modal => {
+                modal.addEventListener('click', function(e) {
+                    if (e.target === modal) {
+                        closeAllModals();
+                    }
+                });
+            });
+            
+            // Open modals when buttons are clicked
+            addStudentBtn.addEventListener('click', () => openModal('add-student-modal'));
+            addTeacherBtn.addEventListener('click', () => openModal('add-teacher-modal'));
+            addClassBtn.addEventListener('click', () => openModal('add-class-modal'));
+            
+            // Profile image upload handling
+            studentProfileImage.addEventListener('change', function(e) {
+                if (e.target.files.length > 0) {
+                    studentProfileFile = e.target.files[0];
+                    studentProfileName.textContent = studentProfileFile.name;
+                    
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        studentProfilePreview.src = event.target.result;
+                    };
+                    reader.readAsDataURL(studentProfileFile);
+                }
+            });
+            
+            teacherProfileImage.addEventListener('change', function(e) {
+                if (e.target.files.length > 0) {
+                    teacherProfileFile = e.target.files[0];
+                    teacherProfileName.textContent = teacherProfileFile.name;
+                    
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        teacherProfilePreview.src = event.target.result;
+                    };
+                    reader.readAsDataURL(teacherProfileFile);
+                }
+            });
+            
+            editStudentProfileImage.addEventListener('change', function(e) {
+                if (e.target.files.length > 0) {
+                    editStudentProfileFile = e.target.files[0];
+                    editStudentProfileName.textContent = editStudentProfileFile.name;
+                    
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        editStudentProfilePreview.src = event.target.result;
+                    };
+                    reader.readAsDataURL(editStudentProfileFile);
+                }
+            });
+            
+            editTeacherProfileImage.addEventListener('change', function(e) {
+                if (e.target.files.length > 0) {
+                    editTeacherProfileFile = e.target.files[0];
+                    editTeacherProfileName.textContent = editTeacherProfileFile.name;
+                    
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        editTeacherProfilePreview.src = event.target.result;
+                    };
+                    reader.readAsDataURL(editTeacherProfileFile);
+                }
+            });
+            
+            // Login form submission
+            loginForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const email = document.getElementById('login-email').value;
+                const password = document.getElementById('login-password').value;
+                
+                firebase.signInWithEmailAndPassword(auth, email, password)
+                    .then((userCredential) => {
+                        currentUser = userCredential.user;
+                        loginPage.classList.add('hidden');
+                        app.classList.remove('hidden');
+                        loadData();
+                        showToast('Login successful!', 'success');
+                    })
+                    .catch((error) => {
+                        loginError.textContent = error.message;
+                        showToast('Login failed: ' + error.message, 'error');
+                    });
+            });
+            
+            // Logout
+            logoutBtn.addEventListener('click', function() {
+                firebase.signOut(auth).then(() => {
+                    currentUser = null;
+                    app.classList.add('hidden');
+                    loginPage.classList.remove('hidden');
+                    loginError.textContent = '';
+                    document.getElementById('login-form').reset();
+                    showToast('Logged out successfully', 'success');
+                }).catch((error) => {
+                    console.error('Logout error:', error);
+                    showToast('Logout failed: ' + error.message, 'error');
+                });
+            });
+            
+            // Load data from Firebase
+            function loadData() {
+                // Load students
+                firebase.get(firebase.child(studentsRef, '/')).then((snapshot) => {
+                    const students = snapshot.val() || {};
+                    document.getElementById('total-students').textContent = Object.keys(students).length;
+                    
+                    // Populate students table
+                    const studentsTableBody = document.getElementById('students-table-body');
+                    studentsTableBody.innerHTML = '';
+                    
+                    for (const id in students) {
+                        const student = students[id];
+                        const row = document.createElement('tr');
+                        
+                        row.innerHTML = `
+                            <td><img src="${student.profileImage || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(student.name) + '&background=6c5ce7&color=fff'}" alt="${student.name}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;"></td>
+                            <td>${id.substring(0, 8)}</td>
+                            <td>${student.name}</td>
+                            <td>${student.email}</td>
+                            <td>${student.class || 'Not assigned'}</td>
+                            <td><span class="status active">Active</span></td>
+                            <td>
+                                <button class="action-btn edit-btn" data-id="${id}"><i class="fas fa-edit"></i></button>
+                                <button class="action-btn delete-btn" data-id="${id}"><i class="fas fa-trash"></i></button>
+                            </td>
+                        `;
+                        
+                        studentsTableBody.appendChild(row);
+                    }
+                    
+                    // Add event listeners to edit and delete buttons
+                    document.querySelectorAll('#students-table-body .edit-btn').forEach(btn => {
+                        btn.addEventListener('click', function() {
+                            const studentId = this.getAttribute('data-id');
+                            editStudent(studentId);
+                        });
+                    });
+                    
+                    document.querySelectorAll('#students-table-body .delete-btn').forEach(btn => {
+                        btn.addEventListener('click', function() {
+                            const studentId = this.getAttribute('data-id');
+                            deleteStudent(studentId);
+                        });
+                    });
+                    
+                    // Populate student dropdowns
+                    const studentSelects = document.querySelectorAll('#student-class, #edit-student-class');
+                    studentSelects.forEach(select => {
+                        select.innerHTML = '<option value="">Select Class</option>';
+                        firebase.get(firebase.child(classesRef, '/')).then((classSnapshot) => {
+                            const classes = classSnapshot.val() || {};
+                            for (const classId in classes) {
+                                const cls = classes[classId];
+                                const option = document.createElement('option');
+                                option.value = cls.name;
+                                option.textContent = cls.name;
+                                select.appendChild(option);
+                                
+                                // Set selected if editing and student is in this class
+                                if (select.id === 'edit-student-class' && select.dataset.currentClass === cls.name) {
+                                    option.selected = true;
+                                }
+                            }
+                        });
+                    });
+                }).catch(error => {
+                    console.error("Error loading students:", error);
+                    showToast('Error loading students: ' + error.message, 'error');
+                });
+                
+                // Load teachers
+                firebase.get(firebase.child(teachersRef, '/')).then((snapshot) => {
+                    const teachers = snapshot.val() || {};
+                    document.getElementById('total-teachers').textContent = Object.keys(teachers).length;
+                    
+                    // Populate teachers table
+                    const teachersTableBody = document.getElementById('teachers-table-body');
+                    teachersTableBody.innerHTML = '';
+                    
+                    for (const id in teachers) {
+                        const teacher = teachers[id];
+                        const row = document.createElement('tr');
+                        
+                        row.innerHTML = `
+                            <td><img src="${teacher.profileImage || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(teacher.name) + '&background=6c5ce7&color=fff'}" alt="${teacher.name}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;"></td>
+                            <td>${id.substring(0, 8)}</td>
+                            <td>${teacher.name}</td>
+                            <td>${teacher.email}</td>
+                            <td>${teacher.subject}</td>
+                            <td>${teacher.community}</td>
+                            <td><span class="status active">Active</span></td>
+                            <td>
+                                <button class="action-btn edit-btn" data-id="${id}"><i class="fas fa-edit"></i></button>
+                                <button class="action-btn delete-btn" data-id="${id}"><i class="fas fa-trash"></i></button>
+                            </td>
+                        `;
+                        
+                        teachersTableBody.appendChild(row);
+                    }
+                    
+                    // Add event listeners to edit and delete buttons
+                    document.querySelectorAll('#teachers-table-body .edit-btn').forEach(btn => {
+                        btn.addEventListener('click', function() {
+                            const teacherId = this.getAttribute('data-id');
+                            editTeacher(teacherId);
+                        });
+                    });
+                    
+                    document.querySelectorAll('#teachers-table-body .delete-btn').forEach(btn => {
+                        btn.addEventListener('click', function() {
+                            const teacherId = this.getAttribute('data-id');
+                            deleteTeacher(teacherId);
+                        });
+                    });
+                    
+                    // Populate teacher dropdowns
+                    const teacherSelects = document.querySelectorAll('#class-teacher, #edit-class-teacher');
+                    teacherSelects.forEach(select => {
+                        select.innerHTML = '<option value="">Select Teacher</option>';
+                        for (const id in teachers) {
+                            const teacher = teachers[id];
+                            const option = document.createElement('option');
+                            option.value = teacher.name;
+                            option.textContent = teacher.name;
+                            select.appendChild(option);
+                            
+                            // Set selected if editing and teacher is assigned to this class
+                            if (select.id === 'edit-class-teacher' && select.dataset.currentTeacher === teacher.name) {
+                                option.selected = true;
+                            }
+                        }
+                    });
+                }).catch(error => {
+                    console.error("Error loading teachers:", error);
+                    showToast('Error loading teachers: ' + error.message, 'error');
+                });
+                
+                // Load classes
+                firebase.get(firebase.child(classesRef, '/')).then((snapshot) => {
+                    const classes = snapshot.val() || {};
+                    document.getElementById('total-classes').textContent = Object.keys(classes).length;
+                    
+                    // Populate classes grid
+                    const classesGrid = document.getElementById('classes-grid');
+                    classesGrid.innerHTML = '';
+                    
+                    firebase.get(firebase.child(teachersRef, '/')).then((teacherSnapshot) => {
+                        const teachers = teacherSnapshot.val() || {};
+                        
+                        for (const id in classes) {
+                            const cls = classes[id];
+                            const classCard = document.createElement('div');
+                            classCard.className = 'class-card';
+                            
+                            classCard.innerHTML = `
+                                <div class="class-card-header">
+                                    <div class="class-card-title">${cls.name}</div>
+                                    <div class="class-card-actions">
+                                        <button class="action-btn edit-btn" data-id="${id}"><i class="fas fa-edit"></i></button>
+                                        <button class="action-btn delete-btn" data-id="${id}"><i class="fas fa-trash"></i></button>
+                                    </div>
+                                </div>
+                                <div class="class-card-teacher">Teacher: ${cls.teacher || 'Not assigned'}</div>
+                                <div class="class-card-schedule">
+                                    <i class="fas fa-calendar-alt"></i>
+                                    <span>${cls.schedule}</span>
+                                </div>
+                                <div class="class-card-room">
+                                    <i class="fas fa-door-open"></i>
+                                    <span>Room: ${cls.room}</span>
+                                </div>
+                                <div class="class-card-students">
+                                    <i class="fas fa-users"></i>
+                                    <span>Students: ${cls.students ? cls.students.length : 0}</span>
+                                </div>
+                            `;
+                            
+                            classesGrid.appendChild(classCard);
+                        }
+                        
+                        // Add event listeners to edit and delete buttons
+                        document.querySelectorAll('.class-card .edit-btn').forEach(btn => {
+                            btn.addEventListener('click', function() {
+                                const classId = this.getAttribute('data-id');
+                                editClass(classId);
+                            });
+                        });
+                        
+                        document.querySelectorAll('.class-card .delete-btn').forEach(btn => {
+                            btn.addEventListener('click', function() {
+                                const classId = this.getAttribute('data-id');
+                                deleteClass(classId);
+                            });
+                        });
+                        
+                        // Populate class checkboxes for teacher assignment
+                        populateClassCheckboxes(classes);
+                    }).catch(error => {
+                        console.error("Error loading teachers for classes:", error);
+                        showToast('Error loading teacher data: ' + error.message, 'error');
+                    });
+                }).catch(error => {
+                    console.error("Error loading classes:", error);
+                    showToast('Error loading classes: ' + error.message, 'error');
+                });
+                
+                // Load activities
+                firebase.get(firebase.child(activitiesRef, '/')).then((snapshot) => {
+                    const activities = snapshot.val() || {};
+                    const activitiesTable = document.getElementById('activities-table');
+                    activitiesTable.innerHTML = '';
+                    
+                    // Convert to array and sort by timestamp (newest first)
+                    const activityArray = Object.entries(activities)
+                        .map(([id, activity]) => ({ id, ...activity }))
+                        .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+                        .slice(0, 5); // Get only the 5 most recent
+                    
+                    for (const activity of activityArray) {
+                        const row = document.createElement('tr');
+                        
+                        row.innerHTML = `
+                            <td>${new Date(activity.timestamp).toLocaleString()}</td>
+                            <td>${activity.action}</td>
+                            <td>${activity.user}</td>
+                            <td><span class="status active">Completed</span></td>
+                        `;
+                        
+                        activitiesTable.appendChild(row);
+                    }
+                }).catch(error => {
+                    console.error("Error loading activities:", error);
+                    showToast('Error loading activities: ' + error.message, 'error');
+                });
+                
+                // Load school info
+                firebase.get(firebase.child(schoolRef, '/')).then((snapshot) => {
+                    const schoolInfo = snapshot.val() || {};
+                    
+                    if (schoolInfo) {
+                        document.getElementById('school-name').value = schoolInfo.name || '';
+                        document.getElementById('school-address').value = schoolInfo.address || '';
+                        document.getElementById('school-phone').value = schoolInfo.phone || '';
+                        document.getElementById('school-email').value = schoolInfo.email || '';
+                    }
+                }).catch(error => {
+                    console.error("Error loading school info:", error);
+                    showToast('Error loading school information: ' + error.message, 'error');
+                });
+            }
+            
+            // Populate class checkboxes for teacher assignment
+            function populateClassCheckboxes(classes) {
+                const teacherClassesCheckboxes = document.getElementById('teacher-classes-checkboxes');
+                const editTeacherClassesCheckboxes = document.getElementById('edit-teacher-classes-checkboxes');
+                
+                teacherClassesCheckboxes.innerHTML = '';
+                editTeacherClassesCheckboxes.innerHTML = '';
+                
+                for (const id in classes) {
+                    const cls = classes[id];
+                    
+                    // For add teacher form
+                    const label = document.createElement('label');
+                    label.className = 'checkbox-label';
+                    label.innerHTML = `
+                        ${cls.name}
+                        <input type="checkbox" name="teacher-classes" value="${cls.name}">
+                        <span class="checkmark"></span>
+                    `;
+                    teacherClassesCheckboxes.appendChild(label.cloneNode(true));
+                    
+                    // For edit teacher form
+                    editTeacherClassesCheckboxes.appendChild(label);
+                }
+            }
+            
+            // Upload profile image to Firebase Storage
+            async function uploadProfileImage(file, path) {
+                if (!file) return null;
+                
+                try {
+                    // Create a reference to the storage location
+                    const storageReference = firebase.storageRef(storage, `${path}/${file.name}`);
+                    
+                    // Upload the file
+                    const snapshot = await firebase.uploadBytes(storageReference, file);
+                    
+                    // Get the download URL
+                    const downloadURL = await firebase.getDownloadURL(snapshot.ref);
+                    
+                    return downloadURL;
+                } catch (error) {
+                    console.error('Error uploading profile image:', error);
+                    showToast('Error uploading profile image: ' + error.message, 'error');
+                    return null;
+                }
+            }
+            
+            // Delete profile image from Firebase Storage
+            async function deleteProfileImage(url) {
+                if (!url) return;
+                
+                try {
+                    // Create a reference to the file to delete
+                    const storageReference = firebase.storageRef(storage, url);
+                    
+                    // Delete the file
+                    await firebase.deleteObject(storageReference);
+                } catch (error) {
+                    console.error('Error deleting profile image:', error);
+                    showToast('Error deleting old profile image: ' + error.message, 'error');
+                }
+            }
+            
+            // Log activity
+            function logActivity(action, user) {
+                const activity = {
+                    action,
+                    user,
+                    timestamp: new Date().toISOString()
+                };
+                
+                firebase.push(activitiesRef, activity)
+                    .catch(error => {
+                        console.error("Error logging activity:", error);
+                        showToast('Error logging activity: ' + error.message, 'error');
+                    });
+            }
+            
+            // Generate random ID and password
+            function generateCredentials() {
+                const id = 'SM' + Math.floor(1000 + Math.random() * 9000);
+                const password = Math.random().toString(36).slice(-8);
+                return { id, password };
+            }
+            
+            // Add Student
+            document.getElementById('add-student-form').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const { id, password } = generateCredentials();
+                const studentName = document.getElementById('student-name').value;
+                const studentEmail = document.getElementById('student-email').value;
+                
+                try {
+                    // Upload profile image if selected
+                    const profileImageUrl = await uploadProfileImage(studentProfileFile, `students/${id}`);
+                    
+                    const studentData = {
+                        id,
+                        name: studentName,
+                        email: studentEmail,
+                        dob: document.getElementById('student-dob').value,
+                        gender: document.getElementById('student-gender').value,
+                        class: document.getElementById('student-class').value,
+                        parent: document.getElementById('student-parent').value,
+                        phone: document.getElementById('student-phone').value,
+                        status: 'Active',
+                        password: password, // In a real app, you would hash this before storing
+                        profileImage: profileImageUrl || null
+                    };
+                    
+                    // Save to Firebase
+                    await firebase.set(firebase.ref(db, 'students/' + id), studentData);
+                    
+                    showToast(`Student added successfully!`, 'success');
+                    
+                    // Reset form and close modal
+                    this.reset();
+                    studentProfilePreview.src = 'https://ui-avatars.com/api/?name=Student&background=6c5ce7&color=fff';
+                    studentProfileName.textContent = 'No file chosen';
+                    studentProfileFile = null;
+                    closeAllModals();
+                    
+                    // Refresh student list
+                    loadData();
+                    logActivity(`Added new student: ${studentName}`, 'Admin');
+                } catch (error) {
+                    console.error('Error adding student:', error);
+                    showToast('Error adding student: ' + error.message, 'error');
+                }
+            });
+            
+            // Add Teacher
+            document.getElementById('add-teacher-form').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const { id, password } = generateCredentials();
+                const teacherName = document.getElementById('teacher-name').value;
+                const teacherEmail = document.getElementById('teacher-email').value;
+                
+                try {
+                    // Get selected classes
+                    const selectedClasses = [];
+                    document.querySelectorAll('#teacher-classes-checkboxes input[type="checkbox"]:checked').forEach(checkbox => {
+                        selectedClasses.push(checkbox.value);
+                    });
+                    
+                    // Upload profile image if selected
+                    const profileImageUrl = await uploadProfileImage(teacherProfileFile, `teachers/${id}`);
+                    
+                    const teacherData = {
+                        id,
+                        name: teacherName,
+                        email: teacherEmail,
+                        dob: document.getElementById('teacher-dob').value,
+                        gender: document.getElementById('teacher-gender').value,
+                        subject: document.getElementById('teacher-subject').value,
+                        community: document.getElementById('teacher-community').value,
+                        qualification: document.getElementById('teacher-qualification').value,
+                        classes: selectedClasses,
+                        status: 'Active',
+                        password: password, // In a real app, you would hash this before storing
+                        profileImage: profileImageUrl || null
+                    };
+                    
+                    // Save to Firebase
+                    await firebase.set(firebase.ref(db, 'teachers/' + id), teacherData);
+                    
+                    // Update classes with this teacher
+                    if (selectedClasses.length > 0) {
+                        const classesSnapshot = await firebase.get(firebase.child(classesRef, '/'));
+                        const classes = classesSnapshot.val() || {};
+                        
+                        for (const classId in classes) {
+                            if (selectedClasses.includes(classes[classId].name)) {
+                                await firebase.update(firebase.ref(db, `classes/${classId}`), {
+                                    teacher: teacherName
+                                });
+                            }
+                        }
+                    }
+                    
+                    showToast(`Teacher added successfully!`, 'success');
+                    
+                    // Reset form and close modal
+                    this.reset();
+                    teacherProfilePreview.src = 'https://ui-avatars.com/api/?name=Teacher&background=6c5ce7&color=fff';
+                    teacherProfileName.textContent = 'No file chosen';
+                    teacherProfileFile = null;
+                    closeAllModals();
+                    
+                    // Refresh teacher list
+                    loadData();
+                    logActivity(`Added new teacher: ${teacherName}`, 'Admin');
+                } catch (error) {
+                    console.error('Error adding teacher:', error);
+                    showToast('Error adding teacher: ' + error.message, 'error');
+                }
+            });
+            
+            // Add Class
+            document.getElementById('add-class-form').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const classId = 'CL' + Math.floor(1000 + Math.random() * 9000);
+                const className = document.getElementById('class-name').value;
+                
+                try {
+                    const classData = {
+                        id: classId,
+                        name: className,
+                        teacher: document.getElementById('class-teacher').value,
+                        schedule: document.getElementById('class-schedule').value,
+                        room: document.getElementById('class-room').value,
+                        students: []
+                    };
+                    
+                    // Save to Firebase
+                    await firebase.set(firebase.ref(db, 'classes/' + classId), classData);
+                    
+                    showToast('Class added successfully!', 'success');
+                    
+                    // Reset form and close modal
+                    this.reset();
+                    closeAllModals();
+                    
+                    // Refresh class list
+                    loadData();
+                    logActivity(`Added new class: ${className}`, 'Admin');
+                } catch (error) {
+                    console.error('Error adding class:', error);
+                    showToast('Error adding class: ' + error.message, 'error');
+                }
+            });
+            
+            // Edit Student
+            async function editStudent(id) {
+                try {
+                    const snapshot = await firebase.get(firebase.child(studentsRef, id));
+                    const student = snapshot.val();
+                    
+                    if (student) {
+                        // Populate the edit form
+                        document.getElementById('edit-student-id').value = id;
+                        document.getElementById('edit-student-name').value = student.name;
+                        document.getElementById('edit-student-email').value = student.email;
+                        document.getElementById('edit-student-gender').value = student.gender;
+                        document.getElementById('edit-student-dob').value = student.dob;
+                        document.getElementById('edit-student-parent').value = student.parent;
+                        document.getElementById('edit-student-phone').value = student.phone;
+                        
+                        // Set profile image preview
+                        editStudentProfilePreview.src = student.profileImage || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(student.name) + '&background=6c5ce7&color=fff';
+                        
+                        // Set current class for the dropdown
+                        const classSelect = document.getElementById('edit-student-class');
+                        classSelect.dataset.currentClass = student.class || '';
+                        
+                        // Load classes for dropdown
+                        loadData();
+                        
+                        // Open the modal
+                        openModal('edit-student-modal');
+                    }
+                } catch (error) {
+                    console.error('Error loading student for edit:', error);
+                    showToast('Error loading student data: ' + error.message, 'error');
+                }
+            }
+            
+            // Edit Student Form Submission
+            document.getElementById('edit-student-form').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const id = document.getElementById('edit-student-id').value;
+                const studentName = document.getElementById('edit-student-name').value;
+                const studentData = {
+                    name: studentName,
+                    email: document.getElementById('edit-student-email').value,
+                    dob: document.getElementById('edit-student-dob').value,
+                    gender: document.getElementById('edit-student-gender').value,
+                    class: document.getElementById('edit-student-class').value,
+                    parent: document.getElementById('edit-student-parent').value,
+                    phone: document.getElementById('edit-student-phone').value,
+                    status: 'Active'
+                };
+                
+                try {
+                    // First get the old student data to check for profile image changes
+                    const oldStudentSnapshot = await firebase.get(firebase.child(studentsRef, id));
+                    const oldStudent = oldStudentSnapshot.val();
+                    
+                    // Upload new profile image if selected
+                    if (editStudentProfileFile) {
+                        // Delete old profile image if it exists
+                        if (oldStudent.profileImage) {
+                            await deleteProfileImage(oldStudent.profileImage);
+                        }
+                        
+                        // Upload new image
+                        const profileImageUrl = await uploadProfileImage(editStudentProfileFile, `students/${id}`);
+                        studentData.profileImage = profileImageUrl;
+                    }
+                    
+                    // Update in Firebase
+                    await firebase.update(firebase.ref(db, 'students/' + id), studentData);
+                    
+                    showToast('Student updated successfully!', 'success');
+                    
+                    // Close modal and refresh data
+                    closeAllModals();
+                    loadData();
+                    logActivity(`Updated student: ${studentName}`, 'Admin');
+                } catch (error) {
+                    console.error('Error updating student:', error);
+                    showToast('Error updating student: ' + error.message, 'error');
+                }
+            });
+            
+            // Edit Teacher
+            async function editTeacher(id) {
+                try {
+                    const snapshot = await firebase.get(firebase.child(teachersRef, id));
+                    const teacher = snapshot.val();
+                    
+                    if (teacher) {
+                        // Populate the edit form
+                        document.getElementById('edit-teacher-id').value = id;
+                        document.getElementById('edit-teacher-name').value = teacher.name;
+                        document.getElementById('edit-teacher-email').value = teacher.email;
+                        document.getElementById('edit-teacher-gender').value = teacher.gender;
+                        document.getElementById('edit-teacher-dob').value = teacher.dob;
+                        document.getElementById('edit-teacher-subject').value = teacher.subject;
+                        document.getElementById('edit-teacher-community').value = teacher.community;
+                        document.getElementById('edit-teacher-qualification').value = teacher.qualification;
+                        
+                        // Set profile image preview
+                        editTeacherProfilePreview.src = teacher.profileImage || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(teacher.name) + '&background=6c5ce7&color=fff';
+                        
+                        // Clear and prepare the classes checkboxes
+                        const checkboxesContainer = document.getElementById('edit-teacher-classes-checkboxes');
+                        checkboxesContainer.innerHTML = '';
+                        
+                        // Load classes and check the ones this teacher is assigned to
+                        const classesSnapshot = await firebase.get(firebase.child(classesRef, '/'));
+                        const classes = classesSnapshot.val() || {};
+                        
+                        for (const classId in classes) {
+                            const cls = classes[classId];
+                            const isAssigned = cls.teacher === teacher.name;
+                            
+                            const label = document.createElement('label');
+                            label.className = 'checkbox-label';
+                            label.innerHTML = `
+                                ${cls.name}
+                                <input type="checkbox" name="edit-teacher-classes" value="${cls.name}" ${isAssigned ? 'checked' : ''}>
+                                <span class="checkmark"></span>
+                            `;
+                            checkboxesContainer.appendChild(label);
+                        }
+                        
+                        // Open the modal
+                        openModal('edit-teacher-modal');
+                    }
+                } catch (error) {
+                    console.error('Error loading teacher for edit:', error);
+                    showToast('Error loading teacher data: ' + error.message, 'error');
+                }
+            }
+            
+            // Edit Teacher Form Submission
+            document.getElementById('edit-teacher-form').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const id = document.getElementById('edit-teacher-id').value;
+                const teacherName = document.getElementById('edit-teacher-name').value;
+                
+                try {
+                    // First get the old teacher data to check for profile image and class changes
+                    const oldTeacherSnapshot = await firebase.get(firebase.child(teachersRef, id));
+                    const oldTeacher = oldTeacherSnapshot.val();
+                    
+                    // Get selected classes
+                    const selectedClasses = [];
+                    document.querySelectorAll('#edit-teacher-classes-checkboxes input[type="checkbox"]:checked').forEach(checkbox => {
+                        selectedClasses.push(checkbox.value);
+                    });
+                    
+                    const teacherData = {
+                        name: teacherName,
+                        email: document.getElementById('edit-teacher-email').value,
+                        dob: document.getElementById('edit-teacher-dob').value,
+                        gender: document.getElementById('edit-teacher-gender').value,
+                        subject: document.getElementById('edit-teacher-subject').value,
+                        community: document.getElementById('edit-teacher-community').value,
+                        qualification: document.getElementById('edit-teacher-qualification').value,
+                        classes: selectedClasses,
+                        status: 'Active'
+                    };
+                    
+                    // Upload new profile image if selected
+                    if (editTeacherProfileFile) {
+                        // Delete old profile image if it exists
+                        if (oldTeacher.profileImage) {
+                            await deleteProfileImage(oldTeacher.profileImage);
+                        }
+                        
+                        // Upload new image
+                        const profileImageUrl = await uploadProfileImage(editTeacherProfileFile, `teachers/${id}`);
+                        teacherData.profileImage = profileImageUrl;
+                    }
+                    
+                    // Update teacher in Firebase
+                    await firebase.update(firebase.ref(db, 'teachers/' + id), teacherData);
+                    
+                    // Handle class assignments
+                    const classesSnapshot = await firebase.get(firebase.child(classesRef, '/'));
+                    const classes = classesSnapshot.val() || {};
+                    
+                    // First, remove this teacher from all classes they're no longer assigned to
+                    if (oldTeacher.classes) {
+                        for (const classId in classes) {
+                            if (oldTeacher.classes.includes(classes[classId].name) && 
+                                !selectedClasses.includes(classes[classId].name)) {
+                                await firebase.update(firebase.ref(db, `classes/${classId}`), {
+                                    teacher: ''
+                                });
+                            }
+                        }
+                    }
+                    
+                    // Then add this teacher to newly assigned classes
+                    for (const classId in classes) {
+                        if (selectedClasses.includes(classes[classId].name)) {
+                            await firebase.update(firebase.ref(db, `classes/${classId}`), {
+                                teacher: teacherName
+                            });
+                        }
+                    }
+                    
+                    showToast('Teacher updated successfully!', 'success');
+                    
+                    // Close modal and refresh data
+                    closeAllModals();
+                    loadData();
+                    logActivity(`Updated teacher: ${teacherName}`, 'Admin');
+                } catch (error) {
+                    console.error('Error updating teacher:', error);
+                    showToast('Error updating teacher: ' + error.message, 'error');
+                }
+            });
+            
+            // Edit Class
+            async function editClass(id) {
+                try {
+                    const snapshot = await firebase.get(firebase.child(classesRef, id));
+                    const cls = snapshot.val();
+                    
+                    if (cls) {
+                        // Populate the edit form
+                        document.getElementById('edit-class-id').value = id;
+                        document.getElementById('edit-class-name').value = cls.name;
+                        document.getElementById('edit-class-schedule').value = cls.schedule;
+                        document.getElementById('edit-class-room').value = cls.room;
+                        
+                        // Set current teacher for the dropdown
+                        const teacherSelect = document.getElementById('edit-class-teacher');
+                        teacherSelect.dataset.currentTeacher = cls.teacher || '';
+                        
+                        // Load teachers for dropdown
+                        loadData();
+                        
+                        // Open the modal
+                        openModal('edit-class-modal');
+                    }
+                } catch (error) {
+                    console.error('Error loading class for edit:', error);
+                    showToast('Error loading class data: ' + error.message, 'error');
+                }
+            }
+            
+            // Edit Class Form Submission
+            document.getElementById('edit-class-form').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const id = document.getElementById('edit-class-id').value;
+                const className = document.getElementById('edit-class-name').value;
+                
+                try {
+                    const classData = {
+                        name: className,
+                        teacher: document.getElementById('edit-class-teacher').value,
+                        schedule: document.getElementById('edit-class-schedule').value,
+                        room: document.getElementById('edit-class-room').value
+                    };
+                    
+                    // Update in Firebase
+                    await firebase.update(firebase.ref(db, 'classes/' + id), classData);
+                    
+                    // If a teacher was assigned, update the teacher's classes list
+                    if (classData.teacher) {
+                        // Find the teacher by name
+                        const teachersSnapshot = await firebase.get(firebase.child(teachersRef, '/'));
+                        const teachers = teachersSnapshot.val() || {};
+                        
+                        for (const teacherId in teachers) {
+                            if (teachers[teacherId].name === classData.teacher) {
+                                const teacher = teachers[teacherId];
+                                const teacherClasses = teacher.classes || [];
+                                
+                                if (!teacherClasses.includes(classData.name)) {
+                                    teacherClasses.push(classData.name);
+                                    await firebase.update(firebase.ref(db, `teachers/${teacherId}`), {
+                                        classes: teacherClasses
+                                    });
+                                }
+                                break;
+                            }
+                        }
+                    }
+                    
+                    showToast('Class updated successfully!', 'success');
+                    
+                    // Close modal and refresh data
+                    closeAllModals();
+                    loadData();
+                    logActivity(`Updated class: ${className}`, 'Admin');
+                } catch (error) {
+                    console.error('Error updating class:', error);
+                    showToast('Error updating class: ' + error.message, 'error');
+                }
+            });
+            
+            // Save Settings
+            document.getElementById('school-settings-form').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                try {
+                    const settings = {
+                        name: document.getElementById('school-name').value,
+                        address: document.getElementById('school-address').value,
+                        phone: document.getElementById('school-phone').value,
+                        email: document.getElementById('school-email').value,
+                        updatedAt: new Date().toISOString()
+                    };
+                    
+                    await firebase.set(schoolRef, settings);
+                    showToast('Settings saved successfully!', 'success');
+                    logActivity('Updated system settings', 'Admin');
+                } catch (error) {
+                    showToast('Error saving settings: ' + error.message, 'error');
+                }
+            });
+            
+            // Delete Student
+            async function deleteStudent(id) {
+                if (confirm('Are you sure you want to delete this student?')) {
+                    try {
+                        // First get the student data to log the name and delete profile image
+                        const snapshot = await firebase.get(firebase.child(studentsRef, id));
+                        const student = snapshot.val();
+                        
+                        // Delete profile image if it exists
+                        if (student.profileImage) {
+                            await deleteProfileImage(student.profileImage);
+                        }
+                        
+                        // Remove from Firebase
+                        await firebase.remove(firebase.ref(db, 'students/' + id));
+                        
+                        // Remove from any classes they're enrolled in
+                        const classesSnapshot = await firebase.get(firebase.child(classesRef, '/'));
+                        const classes = classesSnapshot.val() || {};
+                        
+                        for (const classId in classes) {
+                            if (classes[classId].students && classes[classId].students.includes(id)) {
+                                const updatedStudents = classes[classId].students.filter(studentId => studentId !== id);
+                                await firebase.update(firebase.ref(db, `classes/${classId}`), {
+                                    students: updatedStudents
+                                });
+                            }
+                        }
+                        
+                        showToast('Student deleted successfully!', 'success');
+                        loadData();
+                        logActivity(`Deleted student: ${student ? student.name : id}`, 'Admin');
+                    } catch (error) {
+                        showToast('Error deleting student: ' + error.message, 'error');
+                    }
+                }
+            }
+            
+            // Delete Teacher
+            async function deleteTeacher(id) {
+                if (confirm('Are you sure you want to delete this teacher?')) {
+                    try {
+                        // First get the teacher data to log the name and delete profile image
+                        const snapshot = await firebase.get(firebase.child(teachersRef, id));
+                        const teacher = snapshot.val();
+                        
+                        // Delete profile image if it exists
+                        if (teacher.profileImage) {
+                            await deleteProfileImage(teacher.profileImage);
+                        }
+                        
+                        // Remove from Firebase
+                        await firebase.remove(firebase.ref(db, 'teachers/' + id));
+                        
+                        // Remove from any classes they're assigned to
+                        const classesSnapshot = await firebase.get(firebase.child(classesRef, '/'));
+                        const classes = classesSnapshot.val() || {};
+                        
+                        for (const classId in classes) {
+                            if (classes[classId].teacher === teacher.name) {
+                                await firebase.update(firebase.ref(db, `classes/${classId}`), {
+                                    teacher: ''
+                                });
+                            }
+                        }
+                        
+                        showToast('Teacher deleted successfully!', 'success');
+                        loadData();
+                        logActivity(`Deleted teacher: ${teacher ? teacher.name : id}`, 'Admin');
+                    } catch (error) {
+                        showToast('Error deleting teacher: ' + error.message, 'error');
+                    }
+                }
+            }
+            
+            // Delete Class
+            async function deleteClass(id) {
+                if (confirm('Are you sure you want to delete this class?')) {
+                    try {
+                        // First get the class data to log the name
+                        const snapshot = await firebase.get(firebase.child(classesRef, id));
+                        const cls = snapshot.val();
+                        
+                        // Remove from Firebase
+                        await firebase.remove(firebase.ref(db, 'classes/' + id));
+                        
+                        // Remove from any teachers' assigned classes
+                        const teachersSnapshot = await firebase.get(firebase.child(teachersRef, '/'));
+                        const teachers = teachersSnapshot.val() || {};
+                        
+                        for (const teacherId in teachers) {
+                            if (teachers[teacherId].classes && teachers[teacherId].classes.includes(cls.name)) {
+                                const updatedClasses = teachers[teacherId].classes.filter(className => className !== cls.name);
+                                await firebase.update(firebase.ref(db, `teachers/${teacherId}`), {
+                                    classes: updatedClasses
+                                });
+                            }
+                        }
+                        
+                        showToast('Class deleted successfully!', 'success');
+                        loadData();
+                        logActivity(`Deleted class: ${cls ? cls.name : id}`, 'Admin');
+                    } catch (error) {
+                        showToast('Error deleting class: ' + error.message, 'error');
+                    }
+                }
+            }
+            
+            // Check if user is already logged in
+            auth.onAuthStateChanged((user) => {
+                if (user) {
+                    currentUser = user;
+                    loginPage.classList.add('hidden');
+                    app.classList.remove('hidden');
+                    loadData();
+                }
+            });
+            
+            // Initialize sample data if empty
+            async function initializeSampleData() {
+                try {
+                    const [studentsSnapshot, teachersSnapshot, classesSnapshot, schoolSnapshot] = await Promise.all([
+                        firebase.get(firebase.child(studentsRef, '/')),
+                        firebase.get(firebase.child(teachersRef, '/')),
+                        firebase.get(firebase.child(classesRef, '/')),
+                        firebase.get(firebase.child(schoolRef, '/'))
+                    ]);
+                    
+                    // Initialize sample students if empty
+                    if (!studentsSnapshot.exists()) {
+                        const sampleStudents = {
+                            'SM1001': {
+                                id: 'SM1001',
+                                name: 'John Doe',
+                                email: 'john.doe@example.com',
+                                dob: '2010-05-15',
+                                gender: 'Male',
+                                class: 'Grade 10A',
+                                parent: 'Jane Doe',
+                                phone: '1234567890',
+                                status: 'Active',
+                                password: 'samplepass1',
+                                profileImage: 'https://randomuser.me/api/portraits/men/32.jpg'
+                            },
+                            'SM1002': {
+                                id: 'SM1002',
+                                name: 'Sarah Smith',
+                                email: 'sarah.smith@example.com',
+                                dob: '2011-02-20',
+                                gender: 'Female',
+                                class: 'Grade 9B',
+                                parent: 'Michael Smith',
+                                phone: '9876543210',
+                                status: 'Active',
+                                password: 'samplepass2',
+                                profileImage: 'https://randomuser.me/api/portraits/women/44.jpg'
+                            }
+                        };
+                        
+                        await firebase.set(studentsRef, sampleStudents);
+                    }
+                    
+                    // Initialize sample teachers if empty
+                    if (!teachersSnapshot.exists()) {
+                        const sampleTeachers = {
+                            'TM2001': {
+                                id: 'TM2001',
+                                name: 'Robert Johnson',
+                                email: 'robert.johnson@example.com',
+                                dob: '1980-08-10',
+                                gender: 'Male',
+                                subject: 'Mathematics',
+                                community: 'Mathematics',
+                                qualification: 'M.Sc in Mathematics',
+                                classes: ['Grade 10A'],
+                                status: 'Active',
+                                password: 'samplepass3',
+                                profileImage: 'https://randomuser.me/api/portraits/men/75.jpg'
+                            },
+                            'TM2002': {
+                                id: 'TM2002',
+                                name: 'Emily Davis',
+                                email: 'emily.davis@example.com',
+                                dob: '1985-04-25',
+                                gender: 'Female',
+                                subject: 'English Literature',
+                                community: 'Humanities',
+                                qualification: 'Ph.D in English',
+                                classes: ['Grade 9B'],
+                                status: 'Active',
+                                password: 'samplepass4',
+                                profileImage: 'https://randomuser.me/api/portraits/women/68.jpg'
+                            }
+                        };
+                        
+                        await firebase.set(teachersRef, sampleTeachers);
+                    }
+                    
+                    // Initialize sample classes if empty
+                    if (!classesSnapshot.exists()) {
+                        const sampleClasses = {
+                            'CL3001': {
+                                id: 'CL3001',
+                                name: 'Grade 10A',
+                                teacher: 'Robert Johnson',
+                                schedule: 'Mon-Wed-Fri 9:00-10:30',
+                                room: 'Room 101',
+                                students: ['SM1001']
+                            },
+                            'CL3002': {
+                                id: 'CL3002',
+                                name: 'Grade 9B',
+                                teacher: 'Emily Davis',
+                                schedule: 'Tue-Thu 11:00-12:30',
+                                room: 'Room 205',
+                                students: ['SM1002']
+                            }
+                        };
+                        
+                        await firebase.set(classesRef, sampleClasses);
+                    }
+                    
+                    // Initialize school settings if empty
+                    if (!schoolSnapshot.exists()) {
+                        const defaultSettings = {
+                            name: 'Prestige High School',
+                            address: '123 Education Street, Learning City',
+                            phone: '+1 555-123-4567',
+                            email: 'info@prestigehigh.edu',
+                            updatedAt: new Date().toISOString()
+                        };
+                        
+                        await firebase.set(schoolRef, defaultSettings);
+                    }
+                } catch (error) {
+                    console.error('Error initializing sample data:', error);
+                    showToast('Error initializing sample data: ' + error.message, 'error');
+                }
+            }
+            
+            // Initialize the application
+            initializeSampleData();
+        });
+    </script>
+</body>
+</html>
