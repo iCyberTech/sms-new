@@ -1683,9 +1683,8 @@
             const db = firebase.database;
             const auth = firebase.auth;
             
-            // Google Cloud Storage configuration
-            const GCS_BUCKET_NAME = 'your-gcs-bucket-name'; // Replace with your GCS bucket name
-            const GCS_SERVICE_ACCOUNT = 'service-278253336115@gs-project-accounts.iam.gserviceaccount.com';
+            // Cloudflare R2 Storage configuration
+            const R2_BUCKET_URL = 'https://pub-f4baa29399c14c4191aa8768a705ea6d.r2.dev';
             
             // Initialize Firebase data references
             const studentsRef = firebase.ref(db, 'students');
@@ -1885,7 +1884,7 @@
                         const row = document.createElement('tr');
                         
                         row.innerHTML = `
-                            <td><img src="${getGCSProfileImageUrl('students', id, student.name)}" alt="${student.name}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;"></td>
+                            <td><img src="${getR2ProfileImageUrl('students', id, student.name)}" alt="${student.name}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;"></td>
                             <td>${id.substring(0, 8)}</td>
                             <td>${student.name}</td>
                             <td>${student.email}</td>
@@ -1954,7 +1953,7 @@
                         const row = document.createElement('tr');
                         
                         row.innerHTML = `
-                            <td><img src="${getGCSProfileImageUrl('teachers', id, teacher.name)}" alt="${teacher.name}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;"></td>
+                            <td><img src="${getR2ProfileImageUrl('teachers', id, teacher.name)}" alt="${teacher.name}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;"></td>
                             <td>${id.substring(0, 8)}</td>
                             <td>${teacher.name}</td>
                             <td>${teacher.email}</td>
@@ -2121,28 +2120,28 @@
                 });
             }
             
-            // Get GCS profile image URL
-            function getGCSProfileImageUrl(type, id, name) {
-                // In a real implementation, you would fetch the image from GCS
+            // Get R2 profile image URL
+            function getR2ProfileImageUrl(type, id, name) {
+                // In a real implementation, you would fetch the image from R2
                 // For this example, we'll use a placeholder
                 return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=6c5ce7&color=fff`;
                 
                 // Actual implementation would look something like:
-                // return `https://storage.googleapis.com/${GCS_BUCKET_NAME}/${type}/${id}.jpg`;
+                // return `${R2_BUCKET_URL}/${type}/${id}.jpg`;
             }
             
-            // Upload profile image to Google Cloud Storage
+            // Upload profile image to Cloudflare R2
             async function uploadProfileImage(file, path) {
                 if (!file) return null;
                 
                 try {
-                    // In a real implementation, you would upload to GCS here
+                    // In a real implementation, you would upload to R2 here
                     // For this example, we'll just return a placeholder
-                    showToast('Profile image would be uploaded to GCS in a real implementation', 'warning');
+                    showToast('Profile image would be uploaded to R2 in a real implementation', 'warning');
                     return `https://ui-avatars.com/api/?name=${encodeURIComponent(path.split('/')[1])}&background=6c5ce7&color=fff`;
                     
                     // Actual implementation would involve:
-                    // 1. Authenticating with GCS using the service account
+                    // 1. Authenticating with R2
                     // 2. Uploading the file to the specified path
                     // 3. Returning the public URL
                 } catch (error) {
@@ -2152,14 +2151,14 @@
                 }
             }
             
-            // Delete profile image from Google Cloud Storage
+            // Delete profile image from Cloudflare R2
             async function deleteProfileImage(url) {
                 if (!url) return;
                 
                 try {
-                    // In a real implementation, you would delete from GCS here
+                    // In a real implementation, you would delete from R2 here
                     // For this example, we'll just log it
-                    console.log('Would delete image from GCS:', url);
+                    console.log('Would delete image from R2:', url);
                 } catch (error) {
                     console.error('Error deleting profile image:', error);
                     showToast('Error deleting old profile image: ' + error.message, 'error');
